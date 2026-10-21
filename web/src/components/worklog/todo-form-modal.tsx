@@ -3,6 +3,7 @@
 /**
  * 할 일 추가 · 수정 폼 (홈 「앞으로 할 일」, 명세: home-SPEC.md §2). 기록에서 온 할 일도 같은 폼으로 고친다.
  * 연결은 전부 코드 선택(칩)으로만 한다: 프로젝트(P-코드) · 목표(G) · 계획 항목(G-n-m). 제목 입력으로 잇지 않는다(VOCAB §2).
+ * 행(체크박스 제외)을 누르면 이 폼이 열리고, 삭제는 폼 푸터의 [삭제] → 확인 모달로만 한다(2026-10-21 지시: 행 호버 아이콘 대신).
  */
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -13,7 +14,7 @@ import { Modal } from "@/components/ui/modal";
 import { Segmented } from "@/components/ui/segmented";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
-import { useGoals, useProjects, useUpsertTodo } from "@/hooks/use-worklog";
+import { useDeleteTodo, useGoals, useProjects, useUpsertTodo } from "@/hooks/use-worklog";
 import s from "./worklog.module.css";
 
 export type TodoFormValue = {
@@ -29,6 +30,8 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
   const projects = useProjects();
   const goals = useGoals("active");
   const upsert = useUpsertTodo();
+  const del = useDeleteTodo();
+  const [confirm, setConfirm] = useState(false);
   const [text, setText] = useState("");
   const [ask, setAsk] = useState<"normal" | "ask">("normal");
   const [project, setProject] = useState<string | null>(null);
@@ -48,6 +51,17 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
   const goalOptions = useMemo(() => (goals.data ?? []).filter((g) => !project || g.project_slug === project), [goals.data, project]);
   const itemOptions = useMemo(() => planItems.filter((p) => !goal || p.code.startsWith(goal + "-")), [planItems, goal]);
 
+  const remove = async () => {
+    if (!todo?.id) return;
+    try {
+      await del.mutateAsync(todo.id);
+      toast({ title: tc("deleted"), variant: "success" });
+      setConfirm(false);
+      onClose();
+    } catch {
+      toast({ title: tc("deleteFailed"), variant: "destructive" });
+    }
+  };
   const submit = async () => {
     try {
       await upsert.mutateAsync({ id: todo?.id ?? null, text: text.trim(), needsDecision: ask === "ask", projectSlug: project, goalCode: goal, planItemCode: planItem, dueDate: due || null, note, done: state === "done" });
@@ -65,6 +79,7 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
       onClose={onClose}
       size="lg"
       footer={<>
+        {todo && <Button variant="danger" className={s.footerLeft} onClick={() => setConfirm(true)}>{tc("delete")}</Button>}
         <Button variant="secondary" onClick={onClose}>{tc("cancel")}</Button>
         <Button onClick={submit} disabled={!text.trim()} loading={upsert.isPending}>{tc("save")}</Button>
       </>}
@@ -112,6 +127,17 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
         <Textarea label={t("todoNote")} value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
         <p className={s.hint}>{t("todoFormHint")}</p>
       </div>
+      <Modal
+        open={confirm}
+        title={t("deleteTodoTitle")}
+        onClose={() => setConfirm(false)}
+        footer={<>
+          <Button variant="secondary" onClick={() => setConfirm(false)}>{tc("cancel")}</Button>
+          <Button variant="danger" onClick={remove} loading={del.isPending}>{tc("delete")}</Button>
+        </>}
+      >
+        <p className={s.hint}>{t("deleteTodoBody", { text: todo?.text ?? "" })}</p>
+      </Modal>
     </Modal>
   );
 }

@@ -484,15 +484,16 @@
   font-size: 0.6875rem;
   color: var(--ink-2);
 }
-.todoActs {
-  display: flex;
-  gap: 0.25rem;
-  flex: none;
-  opacity: 0;
-  transition: opacity 0.15s;
+.todoClickable {
+  cursor: pointer;
+  margin: 0 -0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 0.625rem;
+  transition: background 0.12s;
 }
-.todo li:hover .todoActs,
-.todoActs:focus-within { opacity: 1; }
+.todoClickable:hover { background: var(--bg-soft); }
+.footerLeft { margin-right: auto; }
 
 /* 진행 중인 계획 */
 .goal {

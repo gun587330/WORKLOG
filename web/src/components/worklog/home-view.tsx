@@ -8,15 +8,13 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
-import { Modal } from "@/components/ui/modal";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/toast";
-import { useDeleteTodo, useHomeStats, useProjectNames, useSetLogTodoDone, useSetPlanItemStatus } from "@/hooks/use-worklog";
+import { useHomeStats, useProjectNames, useSetLogTodoDone, useSetPlanItemStatus } from "@/hooks/use-worklog";
 import type { HomeStats } from "@/lib/api/worklog";
 import { formatHours, pad2 } from "@/lib/work-log";
 import { addDays, addMonths, daysInMonth, fmtKDate, fmtMD, fmtMonth, fmtPeriod, logCodeToMD, parseISO, sameMonth, todayISO } from "@/lib/format";
@@ -228,20 +226,16 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
   );
 }
 
-/* ── 앞으로 할 일: 계획 항목(미완) + 기록의 할 일(최근 14일) + 직접 추가한 할 일. 체크 = 저장, 추가 · 수정 · 삭제 = 폼 · 확인 모달 ── */
+/* ── 앞으로 할 일: 계획 항목(미완) + 기록의 할 일(최근 14일) + 직접 추가한 할 일. 체크 = 저장. 행(체크 제외)을 누르면 폼이 열리고 수정 · 삭제는 폼 안에서 ── */
 type TodoRow = {
   key: string; kind: "plan" | "log"; id: string; code: string | null; text: string; done: boolean; ask: boolean; source: string; due: string | null;
   projectSlug: string | null; goalCode: string | null; logId: string | null; note: string | null;
 };
 function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading: boolean; name: (slug: string) => string }) {
   const t = useTranslations("wl.home");
-  const tc = useTranslations("wl.common");
-  const toast = useToast();
   const setLog = useSetLogTodoDone();
   const setPlan = useSetPlanItemStatus();
-  const del = useDeleteTodo();
   const [form, setForm] = useState<{ open: boolean; todo: TodoFormValue | null }>({ open: false, todo: null });
-  const [delRow, setDelRow] = useState<TodoRow | null>(null);
 
   const rows = useMemo<TodoRow[]>(() => {
     if (!stats) return [];
@@ -270,11 +264,6 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
   const edit = (r: TodoRow) => setForm({ open: true, todo: {
     id: r.id, text: r.text, needsDecision: r.ask, projectSlug: r.projectSlug, goalCode: r.goalCode, planItemCode: r.code, dueDate: r.due, note: r.note, done: r.done,
   } });
-  const remove = async () => {
-    if (!delRow) return;
-    try { await del.mutateAsync(delRow.id); toast({ title: tc("deleted"), variant: "success" }); setDelRow(null); }
-    catch { toast({ title: tc("deleteFailed"), variant: "destructive" }); }
-  };
 
   return (
     <section className={`${s.colCard} ${s.todoCard}`}>
@@ -286,8 +275,8 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
         {loading && <li><Skeleton height="1.25rem" radius={6} /></li>}
         {!loading && rows.length === 0 && <li><span className={s.hint}>{t("todoEmpty")}</span></li>}
         {rows.map((r) => (
-          <li key={r.key}>
-            <button type="button" className={`${s.todoBox} ${r.done ? s.todoBoxOn : ""}`} aria-label={r.done ? t("markOpen") : t("markDone")} aria-pressed={r.done} onClick={() => toggle(r)} disabled={setLog.isPending || setPlan.isPending} />
+          <li key={r.key} className={r.kind === "log" ? s.todoClickable : undefined} onClick={r.kind === "log" ? () => edit(r) : undefined}>
+            <button type="button" className={`${s.todoBox} ${r.done ? s.todoBoxOn : ""}`} aria-label={r.done ? t("markOpen") : t("markDone")} aria-pressed={r.done} onClick={(e) => { e.stopPropagation(); toggle(r); }} disabled={setLog.isPending || setPlan.isPending} />
             <span className={`${s.todoText} ${r.done ? s.todoDone : ""}`}>
               {r.ask && <><span className={s.todoAsk}>{t("needsDecision")}</span> · </>}
               {r.code && <><span className={s.code}>{r.code}</span> </>}
@@ -299,29 +288,12 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
                 </span>
               )}
             </span>
-            <span className={s.todoSrc}>{r.kind === "log" ? r.source : <Link href="/plans">{r.source}</Link>}</span>
-            {r.kind === "log" && (
-              <span className={s.todoActs}>
-                <button type="button" className={s.iconBtn} aria-label={t("edit")} title={t("edit")} onClick={() => edit(r)}><Pencil size={12} aria-hidden="true" /></button>
-                <button type="button" className={s.iconDel} aria-label={tc("delete")} title={tc("delete")} onClick={() => setDelRow(r)}><Trash2 size={12} aria-hidden="true" /></button>
-              </span>
-            )}
+            <span className={s.todoSrc}>{r.kind === "log" ? r.source : <Link href="/plans" onClick={(e) => e.stopPropagation()}>{r.source}</Link>}</span>
           </li>
         ))}
       </ul>
       <div className={s.cfoot}><span>{t("todoFoot1")}</span><span>{t("todoFoot2")}</span></div>
       <TodoFormModal open={form.open} todo={form.todo} planItems={planItems} onClose={() => setForm({ open: false, todo: null })} />
-      <Modal
-        open={!!delRow}
-        title={t("deleteTodoTitle")}
-        onClose={() => setDelRow(null)}
-        footer={<>
-          <Button variant="secondary" onClick={() => setDelRow(null)}>{tc("cancel")}</Button>
-          <Button variant="danger" onClick={remove} loading={del.isPending}>{tc("delete")}</Button>
-        </>}
-      >
-        <p className={s.hint}>{delRow ? t("deleteTodoBody", { text: delRow.text }) : ""}</p>
-      </Modal>
     </section>
   );
 }
