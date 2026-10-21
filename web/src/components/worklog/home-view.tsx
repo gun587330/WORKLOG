@@ -250,7 +250,6 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
         })}
       </div>
       <div className={s.calFoot}>
-        <span><i className={`${s.sw} ${s.swRange}`} /> {t("legendRange")}</span>
         <span><i className={s.sw} /> {t("legendPlanned")}</span>
         <span><i className={`${s.sw} ${s.swDone}`} /> {t("legendDone")}</span>
         <span>{t("legendMore")}</span>

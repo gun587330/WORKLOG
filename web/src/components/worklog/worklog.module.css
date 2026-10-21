@@ -455,7 +455,6 @@
   background: var(--plan-bar);
 }
 .swDone { background: var(--done-bar); }
-.swRange { width: 0.875rem; background: color-mix(in srgb, var(--accent-soft) 30%, var(--paper)); box-shadow: inset 0.1875rem 0 0 var(--accent-soft); }
 
 /* 앞으로 할 일 */
 .todo {
@@ -1484,8 +1483,8 @@
   top: calc(100% + 0.5rem);
   right: 0;
   z-index: 60;
-  width: 22rem;
-  max-height: 24rem;
+  width: min(32rem, calc(100vw - 2rem));   /* 할 일 제목이 웬만하면 한 줄에 읽히게 넓게(2026-10-22) */
+  max-height: 28rem;
   overflow-y: auto;
   padding: 0.875rem 1rem;
   border-radius: 1rem;
