@@ -1,4 +1,4 @@
-# WORK LOG 데이터 어휘집 (VOCAB)
+# WORKLOG 데이터 어휘집 (VOCAB)
 
 > **이 문서가 데이터의 뜻을 정한다.** 클로드(MCP)의 `describe` 도구는 이 문서 전체를 그대로 돌려준다. 화면 푸터 안내 · 업로드 검수 · 프롬프트의 "[데이터 어휘]" 절 · MCP `describe`
 > 응답이 전부 이 글에서 나온다. 개체를 늘리거나 코드 모양을 바꾸면 여기부터 고친다. (최종 수정: 2026-10-21)
@@ -35,7 +35,7 @@
 - 무엇: 모든 기록 · 목표의 분류 축. "카테고리" 라 부르던 것.
 - 누가 만드나: 사이트 화면(폼). 프롬프트는 기존 코드만 쓴다.
 - 컬럼: `slug`(대문자 영문 · 숫자 · 하이픈, 코드의 뒷부분) · `name`(표시 이름) · `abbr`(달력 약칭 2자) · `description` · `status`(active/archived) · `sort`.
-- 초기 10개: ANSERX · AI-STUDY(AI STUDY) · TRADE-STUDY(무역 STUDY) · SAJU(사주·운세 앱) · AI-CONTENT-BM(AI 콘텐츠 제작 BM) · KORION-PAY(코리온페이 벤치마크) · AI-VIDEO-MKT(AI 영상 제작 마케팅) · WORKLOG(WORK LOG) · STARTUP(창업 활동) · ETC(기타).
+- 초기 10개: ANSERX · AI-STUDY(AI STUDY) · TRADE-STUDY(무역 STUDY) · SAJU(사주·운세 앱) · AI-CONTENT-BM(AI 콘텐츠 제작 BM) · KORION-PAY(코리온페이 벤치마크) · AI-VIDEO-MKT(AI 영상 제작 마케팅) · WORKLOG(WORKLOG) · STARTUP(창업 활동) · ETC(기타).
 
 ### 목표 `goals` — 코드 `G<번호>` (예: `G12`, 번호는 자동 증가, 재사용 없음)
 - 무엇: 한 프로젝트 안에서 어떤 기간에 이루려는 것. 달성률은 계획 항목의 완료 수로 계산한다.
@@ -119,12 +119,12 @@
 "이번 주 컨텍스트 복사" 가 만드는 텍스트. 코드가 맨 앞, 한 항목 한 줄. 끝에 **"이 목록에 없는 코드는 존재하지 않는다"**.
 
 ```
-# WORK LOG 컨텍스트 · 2026-10-21 기준
+# WORKLOG 컨텍스트 · 2026-10-21 기준
 ## 프로젝트
-P-ANSERX ANSERX (AX) · P-WORKLOG WORK LOG (WL) · …
+P-ANSERX ANSERX (AX) · P-WORKLOG WORKLOG (WL) · …
 ## 진행 중 목표
 G1 공동구매 창구 페이지 · P-ANSERX · 10-20~10-26 · 2/4
-G4 WORK LOG 사이트 1차 · P-WORKLOG · 10-20~11-02 · 1/4
+G4 WORKLOG 사이트 1차 · P-WORKLOG · 10-20~11-02 · 1/4
 ## 현재 계획 PL-2026-W43 (10-20 ~ 10-26) 할 일
 G1-1 공구 창구 페이지 와이어 · 10-20 · 완료
 G1-2 공구 상품 등록 폼 · 10-23 · 미완
@@ -145,10 +145,10 @@ L-2026-10-19 · 14작업 · 9시간 · tradeKorea 148건 수집 완료 …
 
 ## 7. AI(MCP) 읽기 · 쓰기 규칙
 
-클로드가 MCP 도구로 WORK LOG 를 읽고 쓸 때 지키는 규칙이다. 서버(DB 함수 `mcp_prepare` · `mcp_commit`, 마이그레이션 0012)가 강제하는 것은 ★ 표시.
+클로드가 MCP 도구로 WORKLOG 를 읽고 쓸 때 지키는 규칙이다. 서버(DB 함수 `mcp_prepare` · `mcp_commit`, 마이그레이션 0012)가 강제하는 것은 ★ 표시.
 
 ### 7-1. 시작
-- 대화에서 WORK LOG 를 처음 다룰 때 `describe`(이 문서)를 먼저 읽는다.
+- 대화에서 WORKLOG 를 처음 다룰 때 `describe`(이 문서)를 먼저 읽는다.
 - 코드는 `get_context_pack` · `list_*` 결과에 있는 것만 쓴다. 없는 코드는 존재하지 않는다(§2-2).
 
 ### 7-1-1. 프롬프트 (MCP prompts, 0016)

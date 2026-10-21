@@ -1,5 +1,5 @@
 /**
- * WORK LOG DAL — 모든 데이터 접근은 여기서 RPC 로만 한다 (CLAUDE.md 규칙 6 · docs/backend/SECURITY.md).
+ * WORKLOG DAL — 모든 데이터 접근은 여기서 RPC 로만 한다 (CLAUDE.md 규칙 6 · docs/backend/SECURITY.md).
  * anserx-code lib/api/admin.ts 「작업 공유」 절에서 옮김 · 바뀐 점: admin_ 접두 없음, 개체가 프로젝트 · 목표 ·
  * 계획 · 계획 항목 · 기록 · 할 일 · 프롬프트 · 링크 · 컨텍스트 팩 · 홈 집계로 늘었다(docs/VOCAB.md).
  * 파서(lib/work-log · lib/work-plan)의 결과를 RPC 인자 모양으로 바꾸는 것도 이 파일의 일이다.

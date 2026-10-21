@@ -73,7 +73,7 @@ type TodoRow = { id: string; text: string; done: boolean; project: string | null
 export const TOOLS: Tool[] = [
   {
     name: "describe",
-    description: "WORK LOG 의 데이터 어휘(개체 · 코드 · 관계)와 AI 읽기 · 쓰기 규칙 전문. 이 대화에서 WORK LOG 를 처음 다룰 때 다른 도구보다 먼저 부른다.",
+    description: "WORKLOG 의 데이터 어휘(개체 · 코드 · 관계)와 AI 읽기 · 쓰기 규칙 전문. 이 대화에서 WORKLOG 를 처음 다룰 때 다른 도구보다 먼저 부른다.",
     inputSchema: { type: "object", properties: {} },
     run: async () => VOCAB_MD,
   },
@@ -408,7 +408,7 @@ export const TOOLS: Tool[] = [
 ];
 
 export const SERVER_INSTRUCTIONS = [
-  "WORK LOG 는 정건의 하루 작업 기록 · 계획 · 목표를 담는다.",
+  "WORKLOG 는 정건의 하루 작업 기록 · 계획 · 목표를 담는다.",
   "처음에 describe 를 읽고, 코드(P- · G · G-n-m · PL- · L-)는 get_context_pack · list_* 에 있는 것만 쓴다.",
   "쓰기는 항상 preview → 사용자에게 보여 주고 질문 → 명시적 승인 → commit(user_confirmation = 답변 원문). 승인 전 commit 금지.",
   "작업 · 목표 · 할 일의 프로젝트는 항목마다 사용자에게 확인받는다. 맞는 프로젝트가 없으면 기타로 넣지 말고 기존 목록을 보여 주며 묻는다.",

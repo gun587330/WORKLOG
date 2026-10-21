@@ -89,7 +89,7 @@ export function AppShell({
       )}
       <aside className={s.sidebar}>
         <div className={s.logoRow}>
-          <Link className={s.logo} href="/home" aria-label="WORK LOG"><i aria-hidden="true" />WORKLOG</Link>
+          <Link className={s.logo} href="/home" aria-label="WORKLOG"><i aria-hidden="true" />WORKLOG</Link>
           <button type="button" className={s.collapseBtn} aria-label={t("shell.collapse")} onClick={toggleCollapsed}>
             <PanelLeftClose aria-hidden="true" />
           </button>
@@ -107,7 +107,7 @@ export function AppShell({
 
       <div className={s.content}>
         <header className={s.mobileTop}>
-          <Link href="/home" aria-label="WORK LOG" className={s.logo}><i aria-hidden="true" />WORKLOG</Link>
+          <Link href="/home" aria-label="WORKLOG" className={s.logo}><i aria-hidden="true" />WORKLOG</Link>
           <div className={s.account}>
             <button type="button" className={s.accountBtn} aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>
               <span className={s.avatar} aria-hidden="true">{displayName[0]}</span>

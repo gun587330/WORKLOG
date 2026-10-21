@@ -1,5 +1,5 @@
 /**
- * MCP 서버 — 클로드가 WORK LOG 를 읽고 쓰는 창구. 주소: /api/mcp (토큰은 Authorization 헤더) 또는 /api/mcp/<토큰>.
+ * MCP 서버 — 클로드가 WORKLOG 를 읽고 쓰는 창구. 주소: /api/mcp (토큰은 Authorization 헤더) 또는 /api/mcp/<토큰>.
  *
  * MCP Streamable HTTP 의 상태 없는(stateless) 형태다: 클로드 앱에 내장된 MCP 클라이언트가 JSON-RPC 메시지를 POST 하면
  * 여기서 받아 JSON 으로 답한다. 처리하는 메서드는 initialize · tools/list · tools/call · prompts/list · prompts/get · ping 이고, 도구의 실제 일은
@@ -41,7 +41,7 @@ async function handle(msg: RpcMsg, ctx: Ctx): Promise<object | null> {
         result: {
           protocolVersion: SUPPORTED.includes(asked) ? asked : SUPPORTED[0],
           capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-          serverInfo: { name: "worklog", title: "WORK LOG", version: "1.0.0" },
+          serverInfo: { name: "worklog", title: "WORKLOG", version: "1.0.0" },
           instructions: SERVER_INSTRUCTIONS,
         },
       };

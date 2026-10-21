@@ -18,13 +18,13 @@ const KNOWN: Record<string, { name: string; kind: "log" | "plan" }> = {
 };
 
 const ADAPTER = {
-  log: `[MCP 연결 대화에서는] 이 대화는 WORK LOG 와 MCP 로 연결돼 있다. 아래 프롬프트를 따르되 다음 두 가지만 바꾼다.
+  log: `[MCP 연결 대화에서는] 이 대화는 WORKLOG 와 MCP 로 연결돼 있다. 아래 프롬프트를 따르되 다음 두 가지만 바꾼다.
 - [0단계] 컨텍스트 팩을 사용자에게 붙여넣어 달라고 하지 않는다. describe 를 읽고 get_context_pack 도구로 직접 가져온다.
 - [출력 규칙] 파일이나 코드블록으로 내려주지 않는다. 사용자가 "정리해줘" 라고 하면 문서를 만들어 upload_log 를 mode=preview 로 부르고,
   결과(작업마다 프로젝트 확인 질문 포함)를 사용자에게 보여 준 뒤 명시적 승인을 받으면 mode=commit 으로 저장한다.
 - 오늘 한 일은 이 대화, 이 작업 공간의 git 커밋 · 바뀐 파일, list_logs · list_todos 에서 먼저 찾아 보여 주고, 빠진 것을 묻는다.
 `,
-  plan: `[MCP 연결 대화에서는] 이 대화는 WORK LOG 와 MCP 로 연결돼 있다. 아래 프롬프트를 따르되 다음 두 가지만 바꾼다.
+  plan: `[MCP 연결 대화에서는] 이 대화는 WORKLOG 와 MCP 로 연결돼 있다. 아래 프롬프트를 따르되 다음 두 가지만 바꾼다.
 - [0단계] 컨텍스트 팩을 사용자에게 붙여넣어 달라고 하지 않는다. describe 를 읽고 get_context_pack · list_goals · list_plan_items 도구로 직접 가져온다.
 - [출력 규칙] 파일이나 코드블록으로 내려주지 않는다. 사용자가 "정리해줘" 라고 하면 문서를 만들어 upload_plan 을 mode=preview 로 부르고,
   결과([신규] 목표마다 프로젝트 확인 질문 포함)를 사용자에게 보여 준 뒤 명시적 승인을 받으면 mode=commit 으로 저장한다.

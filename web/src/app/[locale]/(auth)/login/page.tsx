@@ -22,7 +22,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   return (
     <main className={s.page}>
       <section className={s.panel}>
-        <p className={s.brand}><i aria-hidden="true" />WORK LOG</p>
+        <p className={s.brand}><i aria-hidden="true" />WORKLOG</p>
         <h1 className={s.title}>{t("title")}</h1>
         <p className={s.lead}>{t("lead")}</p>
         {(!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) && (

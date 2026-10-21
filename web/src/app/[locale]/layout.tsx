@@ -10,7 +10,7 @@ import { Providers } from "../providers";
  * 루트 레이아웃 (= [locale] 레이아웃). ANSERX 에서 옮김 · 바뀐 점: Analytics 없음, 메타 문구.
  */
 export const metadata: Metadata = {
-  title: { default: "WORK LOG", template: "%s | WORK LOG" },
+  title: { default: "WORKLOG", template: "%s | WORKLOG" },
   description: "하루 작업 기록 · 계획 · 목표",
 };
 
