@@ -849,6 +849,7 @@ export type Database = {
         Args: { p_payload: Json; p_token: string; p_tool: string }
         Returns: Json
       }
+      mcp_prompts: { Args: { p_token: string }; Returns: Json }
       mcp_read: {
         Args: { p_args?: Json; p_token: string; p_tool: string }
         Returns: Json

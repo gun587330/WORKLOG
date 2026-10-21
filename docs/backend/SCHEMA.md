@@ -36,6 +36,7 @@
 | 0012 | `mcp` | `private.mcp_tokens` · `private.mcp_pending` · `public.mcp_audit` + `mcp_read` · `mcp_prepare` · `mcp_commit` · `issue_mcp_token` · `revoke_mcp_tokens` · `list_mcp_audit` |
 | 0013 | `mcp_goal_by_code` | MCP save_goal 이 목표를 코드(G12)로 가리킨다 |
 | 0014 | `mcp_confirm_short_kst` | 한 글자 승인("네") 허용, 컨텍스트 팩 날짜를 한국 시간으로 |
+| 0016 | `mcp_prompts` | 프롬프트 모음을 MCP 프롬프트(prompts/list · prompts/get)로 내보내는 `mcp_prompts(토큰)` |
 | 0015 | `diary` | `diary_entries` + `list_diary` · `upsert_diary`(본문 링크 함께) · `delete_diary`, `links.from_type` 에 `diary` 추가 |
 
 ## 10. 결정 로그

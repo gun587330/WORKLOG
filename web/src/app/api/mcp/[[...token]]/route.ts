@@ -2,7 +2,7 @@
  * MCP 서버 — 클로드가 WORK LOG 를 읽고 쓰는 창구. 주소: /api/mcp (토큰은 Authorization 헤더) 또는 /api/mcp/<토큰>.
  *
  * MCP Streamable HTTP 의 상태 없는(stateless) 형태다: 클로드 앱에 내장된 MCP 클라이언트가 JSON-RPC 메시지를 POST 하면
- * 여기서 받아 JSON 으로 답한다. 처리하는 메서드는 initialize · tools/list · tools/call · ping 뿐이고, 도구의 실제 일은
+ * 여기서 받아 JSON 으로 답한다. 처리하는 메서드는 initialize · tools/list · tools/call · prompts/list · prompts/get · ping 이고, 도구의 실제 일은
  * lib/mcp/tools.ts → DB 함수(mcp_read · mcp_prepare · mcp_commit, 마이그레이션 0012)가 한다.
  *
  * 인증: MCP 개인 토큰(npm run mcp:token). 서버는 anon 키만 쓴다. 토큰 검사와 "토큰 주인 = 로그인 사용자" 설정은 DB 함수가 한다.
@@ -11,6 +11,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { SERVER_INSTRUCTIONS, TOOLS, ToolError, type Ctx } from "@/lib/mcp/tools";
+import { getPrompt, listPrompts } from "@/lib/mcp/prompts";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,7 +40,7 @@ async function handle(msg: RpcMsg, ctx: Ctx): Promise<object | null> {
         jsonrpc: "2.0", id,
         result: {
           protocolVersion: SUPPORTED.includes(asked) ? asked : SUPPORTED[0],
-          capabilities: { tools: { listChanged: false } },
+          capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
           serverInfo: { name: "worklog", title: "WORK LOG", version: "1.0.0" },
           instructions: SERVER_INSTRUCTIONS,
         },
@@ -75,6 +76,19 @@ async function handle(msg: RpcMsg, ctx: Ctx): Promise<object | null> {
         return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: message }], isError: true } };
       }
     }
+    case "prompts/list":
+      try {
+        return { jsonrpc: "2.0", id, result: { prompts: await listPrompts(ctx) } };
+      } catch (e) {
+        return rpcError(id, -32603, (e as Error).message);
+      }
+    case "prompts/get":
+      try {
+        const name = String(msg.params?.name ?? "");
+        return { jsonrpc: "2.0", id, result: await getPrompt(ctx, name, (msg.params?.arguments as Record<string, unknown>) ?? {}) };
+      } catch (e) {
+        return rpcError(id, -32602, (e as Error).message);
+      }
     default:
       if (isNotification || msg.method?.startsWith("notifications/")) return null;
       return rpcError(id, -32601, `지원하지 않는 메서드: ${msg.method}`);

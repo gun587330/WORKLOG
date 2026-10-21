@@ -42,4 +42,5 @@ Vercel 프로젝트의 Root Directory 를 `web` 으로 두고 환경 변수에 `
    - claude.ai: 설정 > 커넥터 > 사용자 지정 커넥터 추가, URL 에 `https://worklog-phi-two.vercel.app/api/mcp/<토큰>`.
 3. 클로드 앱의 도구 승인 설정에서 쓰기 도구(upload_log · upload_plan · create_project · save_goal · save_todo · set_todo_done · set_plan_item_status)는 "항상 묻기".
 4. 폐기: `npm run mcp:token -- --revoke --label claude-code` 또는 `--revoke-all`.
+5. 프롬프트: Claude Code 에서 `/mcp__worklog__work_log`(작업 기록) · `/mcp__worklog__work_plan`(작업 계획). 사이트의 프롬프트 모음과 같은 글이다.
 

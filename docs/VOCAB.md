@@ -151,6 +151,10 @@ L-2026-10-19 · 14작업 · 9시간 · tradeKorea 148건 수집 완료 …
 - 대화에서 WORK LOG 를 처음 다룰 때 `describe`(이 문서)를 먼저 읽는다.
 - 코드는 `get_context_pack` · `list_*` 결과에 있는 것만 쓴다. 없는 코드는 존재하지 않는다(§2-2).
 
+### 7-1-1. 프롬프트 (MCP prompts, 0016)
+- 사이트 「프롬프트」 모음이 MCP 프롬프트로 나간다. Claude Code 에서 `/mcp__worklog__work_log`(작업 기록용) · `/mcp__worklog__work_plan`(작업 계획용).
+- MCP 로 열린 프롬프트는 앞에 [MCP 연결 대화에서는] 절이 붙는다: 컨텍스트 팩은 도구로 직접 읽고, 결과는 파일 대신 upload_* preview → 승인 → commit.
+
 ### 7-2. 쓰기는 항상 두 단계
 1. `mode: "preview"` 로 부른다. 서버는 저장하지 않고 요약 · 문제 · 사용자에게 물을 것(`ask_user`) · 확인 번호(`confirm_code`)를 돌려준다.
 2. preview 결과를 **사용자에게 그대로 보여 주고 질문한다.** `ask_user` 의 질문은 빠짐없이 묻는다.
