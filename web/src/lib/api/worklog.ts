@@ -1,0 +1,170 @@
+/**
+ * WORK LOG DAL — 모든 데이터 접근은 여기서 RPC 로만 한다 (CLAUDE.md 규칙 6 · docs/backend/SECURITY.md).
+ * anserx-code lib/api/admin.ts 「작업 공유」 절에서 옮김 · 바뀐 점: admin_ 접두 없음, 개체가 프로젝트 · 목표 ·
+ * 계획 · 계획 항목 · 기록 · 할 일 · 프롬프트 · 링크 · 컨텍스트 팩 · 홈 집계로 늘었다(docs/VOCAB.md).
+ * 파서(lib/work-log · lib/work-plan)의 결과를 RPC 인자 모양으로 바꾸는 것도 이 파일의 일이다.
+ */
+import { createClient } from "@/lib/supabase/client";
+import type { Database, Json } from "@/types/database";
+import { failFrom, type ApiResult } from "./response";
+import type { ParsedWorkLog, CodeLink } from "@/lib/work-log";
+import type { ParsedWorkPlan } from "@/lib/work-plan";
+
+type Fn = Database["public"]["Functions"];
+type Tables = Database["public"]["Tables"];
+
+export type Project = Tables["projects"]["Row"];
+export type Goal = Tables["goals"]["Row"];
+export type GoalRow = Fn["list_goals"]["Returns"][number];
+export type Plan = Tables["plans"]["Row"];
+export type PlanRow = Fn["list_plans"]["Returns"][number];
+export type PlanItem = Tables["plan_items"]["Row"];
+export type WorkLog = Tables["work_logs"]["Row"];
+export type WorkLogRow = Fn["list_work_logs"]["Returns"][number];
+export type LogTodo = Tables["log_todos"]["Row"];
+export type Prompt = Tables["prompts"]["Row"];
+
+/** get_plan 의 jsonb 모양 (0004) */
+export type PlanDetail = {
+  plan: Plan;
+  items: { id: string; code: string; title: string; due_date: string | null; status: "open" | "done"; goal_code: string; goal_title: string; project_slug: string; done_log_id: string | null }[];
+};
+/** get_work_log 의 jsonb 모양 (0005) */
+export type WorkLogDetail = {
+  log: WorkLog;
+  items: { id: string; seq: number; code: string; time_text: string | null; hour_end: number | null; title: string; project_slug: string; project_name: string; goal_code: string | null; goal_title: string | null; status: string; tags: string[]; body_md: string }[];
+  hours: { hour: number; value: number; label: string }[];
+  todos: { id: string; text: string; needs_decision: boolean; done: boolean; plan_item_code: string | null }[];
+  completions: { code: string; title: string; goal_code: string }[];
+};
+/** home_stats 의 jsonb 모양 (0007) */
+export type HomeStats = {
+  date: string;
+  today_hours: { hour: number; value: number }[];
+  week_days: { date: string; hours: number }[];
+  month_days: { date: string; hours: number }[];
+  week_projects: { slug: string; name: string; hours: number }[];
+  calendar: {
+    start: string; end: string;
+    planned: { date: string; code: string; title: string; status: string; goal_code: string }[];
+    logs: { date: string; id: string; code: string; hours: number; projects: string[] }[];
+  };
+  todos: { kind: "log"; id: string; text: string; needs_decision: boolean; done: boolean; source: string; plan_item_code: string | null }[];
+  plan_items_open: { kind: "plan"; id: string; code: string; text: string; done: boolean; due_date: string | null; source: string }[];
+  active_plan: {
+    id: string; code: string; title: string; period_start: string; period_end: string;
+    goals: { code: string; title: string; project_slug: string; total: number; done: number }[];
+  } | null;
+};
+
+/** env 가 없으면(백엔드 미연결) createClient 가 던진다 — 화면이 사유를 말할 수 있게 봉투로 돌려보낸다 */
+async function call<K extends keyof Fn>(name: K, args?: Fn[K]["Args"]): Promise<ApiResult<Fn[K]["Returns"]>> {
+  try {
+    const rpc = createClient().rpc as unknown as (fn: string, a?: unknown) => PromiseLike<{ data: unknown; error: unknown }>;
+    const res = await rpc(name as string, args);
+    if (res.error) return failFrom(res.error);
+    return { data: res.data as Fn[K]["Returns"], error: null };
+  } catch (e) {
+    console.error(`[rpc ${String(name)}]`, e);
+    return failFrom(e);
+  }
+}
+const nullId = (id?: string | null) => (id ?? null) as unknown as string;
+const nullStr = (v?: string | null) => (v && v.trim() ? v.trim() : null) as unknown as string;
+
+/* ── 프로젝트 ── */
+export const getProjects = (includeArchived = false) => call("list_projects", { p_include_archived: includeArchived });
+export type ProjectInput = { id?: string | null; slug: string; name: string; abbr: string; description?: string; sort?: number };
+export const upsertProject = (i: ProjectInput) =>
+  call("upsert_project", { p_id: nullId(i.id), p_slug: i.slug.trim().toUpperCase(), p_name: i.name.trim(), p_abbr: i.abbr.trim(), p_description: nullStr(i.description), p_sort: i.sort ?? 100 });
+export const setProjectStatus = (id: string, status: "active" | "archived") => call("set_project_status", { p_id: id, p_status: status });
+
+/* ── 목표 ── */
+export const getGoals = (status?: string | null) => call("list_goals", status ? { p_status: status } : {});
+export type GoalInput = { id?: string | null; title: string; projectSlug: string; periodStart?: string | null; periodEnd?: string | null; status?: "active" | "done" | "paused" | null; note?: string | null };
+export const upsertGoal = (i: GoalInput) =>
+  call("upsert_goal", {
+    p_id: nullId(i.id), p_title: i.title, p_project_slug: i.projectSlug,
+    p_period_start: nullStr(i.periodStart), p_period_end: nullStr(i.periodEnd),
+    p_status: nullStr(i.status), p_note: nullStr(i.note),
+  });
+export const deleteGoal = (id: string) => call("delete_goal", { p_id: id });
+
+/* ── 계획 ── */
+export const getPlans = () => call("list_plans", {});
+export async function getPlan(id: string): Promise<ApiResult<PlanDetail>> {
+  const res = await call("get_plan", { p_id: id });
+  if (res.error) return res as ApiResult<PlanDetail>;
+  return { data: res.data as unknown as PlanDetail, error: null };
+}
+export const deletePlan = (id: string) => call("delete_plan", { p_id: id });
+export const setPlanItemStatus = (id: string, status: "open" | "done") => call("set_plan_item_status", { p_id: id, p_status: status });
+
+const toLinks = (links: CodeLink[]) => links.map((l) => ({ to_type: l.toType, to_code: l.toCode, kind: l.kind, context: l.context })) as unknown as Json;
+
+/** 계획 올리기 — 파서 결과를 insert_plan 인자로. 목표 · 할 일 · 링크를 한 번에 */
+export async function insertPlan(parsed: ParsedWorkPlan, rawMd: string): Promise<ApiResult<Plan>> {
+  const res = await call("insert_plan", {
+    p_code: parsed.code,
+    p_title: parsed.meta.title,
+    p_period_start: parsed.meta.periodStart,
+    p_period_end: parsed.meta.periodEnd || parsed.meta.periodStart,
+    p_summary: parsed.meta.summary,
+    p_raw_md: rawMd,
+    p_goals: parsed.goals.map((g) => ({ ref: g.ref, title: g.title, project_slug: g.projectSlug, is_new: g.isNew })) as unknown as Json,
+    p_items: parsed.items.map((i) => ({ goal_ref: i.goalRef, title: i.title, due_date: i.dueDate })) as unknown as Json,
+  });
+  if (res.error) return res;
+  if (parsed.links.length) await call("insert_links", { p_from_type: "plan", p_from_id: res.data.id, p_links: toLinks(parsed.links) });
+  return res;
+}
+
+/* ── 기록 ── */
+export type LogFilter = { projectSlug?: string | null; from?: string | null; to?: string | null; limit?: number };
+export const getWorkLogs = (f: LogFilter = {}) =>
+  call("list_work_logs", {
+    ...(f.projectSlug ? { p_project_slug: f.projectSlug } : {}),
+    ...(f.from ? { p_from: f.from } : {}),
+    ...(f.to ? { p_to: f.to } : {}),
+    ...(f.limit ? { p_limit: f.limit } : {}),
+  });
+export async function getWorkLog(id: string): Promise<ApiResult<WorkLogDetail>> {
+  const res = await call("get_work_log", { p_id: id });
+  if (res.error) return res as ApiResult<WorkLogDetail>;
+  return { data: res.data as unknown as WorkLogDetail, error: null };
+}
+/** 기록 올리기 — 항상 새 행. 작업 · 시간표 · 할 일 · 달성(## 목표 진행) · 링크를 한 번에 */
+export async function insertWorkLog(parsed: ParsedWorkLog, rawMd: string): Promise<ApiResult<WorkLog>> {
+  const res = await call("insert_work_log", {
+    p_log_date: parsed.meta.date,
+    p_author_name: parsed.meta.author,
+    p_summary: parsed.meta.summary,
+    p_raw_md: rawMd,
+    p_items: parsed.items.map((i) => ({
+      seq: i.seq, time_text: i.time, hour_end: i.hourEnd, title: i.title, project_slug: i.projectSlug,
+      goal_code: i.goalCode, status: i.status, tags: i.tags, body_md: i.body,
+    })) as unknown as Json,
+    p_hours: parsed.hours.map((h) => ({ hour: h.hour, value: h.value, label: h.label })) as unknown as Json,
+    p_todos: parsed.todos.map((t) => ({ seq: t.seq, text: t.text, needs_decision: t.needsDecision, plan_item_code: t.planItemCode })) as unknown as Json,
+    p_completions: parsed.completions,
+  });
+  if (res.error) return res;
+  if (parsed.links.length) await call("insert_links", { p_from_type: "log", p_from_id: res.data.id, p_links: toLinks(parsed.links) });
+  return res;
+}
+export const deleteWorkLog = (id: string) => call("delete_work_log", { p_id: id });
+export const setLogTodoDone = (id: string, done: boolean) => call("set_log_todo_done", { p_id: id, p_done: done });
+
+/* ── 프롬프트 ── */
+export const getPrompts = () => call("list_prompts", {});
+export type PromptInput = { id?: string | null; title: string; purpose: string; body: string };
+export const upsertPrompt = (i: PromptInput) => call("upsert_prompt", { p_id: nullId(i.id), p_title: i.title, p_purpose: i.purpose, p_body: i.body });
+export const deletePrompt = (id: string) => call("delete_prompt", { p_id: id });
+
+/* ── 컨텍스트 팩 · 홈 ── */
+export const getContextPack = (from?: string, to?: string) => call("context_pack", { ...(from ? { p_from: from } : {}), ...(to ? { p_to: to } : {}) });
+export async function getHomeStats(date: string): Promise<ApiResult<HomeStats>> {
+  const res = await call("home_stats", { p_date: date });
+  if (res.error) return res as ApiResult<HomeStats>;
+  return { data: res.data as unknown as HomeStats, error: null };
+}
