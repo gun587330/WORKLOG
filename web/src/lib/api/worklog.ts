@@ -91,7 +91,7 @@ export const upsertGoal = (i: GoalInput) =>
 export const deleteGoal = (id: string) => call("delete_goal", { p_id: id });
 
 /* ── 계획 ── */
-export const getPlans = () => call("list_plans", {});
+export const getPlans = () => call("list_plans");
 export async function getPlan(id: string): Promise<ApiResult<PlanDetail>> {
   const res = await call("get_plan", { p_id: id });
   if (res.error) return res as ApiResult<PlanDetail>;
@@ -156,7 +156,7 @@ export const deleteWorkLog = (id: string) => call("delete_work_log", { p_id: id 
 export const setLogTodoDone = (id: string, done: boolean) => call("set_log_todo_done", { p_id: id, p_done: done });
 
 /* ── 프롬프트 ── */
-export const getPrompts = () => call("list_prompts", {});
+export const getPrompts = () => call("list_prompts");
 export type PromptInput = { id?: string | null; title: string; purpose: string; body: string };
 export const upsertPrompt = (i: PromptInput) => call("upsert_prompt", { p_id: nullId(i.id), p_title: i.title, p_purpose: i.purpose, p_body: i.body });
 export const deletePrompt = (id: string) => call("delete_prompt", { p_id: id });

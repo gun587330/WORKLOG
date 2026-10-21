@@ -1,86 +1,973 @@
-/**
- * ⚠️ 손으로 쓴 임시 스키마 타입 — `npm run gen:types`(루트) 가 원격 스키마에서 이 파일을 **덮어쓴다**.
- * 마이그레이션 0001~0007 과 1:1 로 맞춰 두어 push 전에도 typecheck 가 돌게 한다.
- * 생성 타입과 같은 관례를 따른다: uuid · date · timestamptz 는 string, numeric 은 number, jsonb 는 Json,
- * 기본값 있는 인자는 선택(?), 없는 인자는 필수 string(null 을 넘길 땐 호출부가 캐스팅).
- */
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
-
-type Tbl<R> = { Row: R; Insert: Partial<R>; Update: Partial<R>; Relationships: [] };
-
-type ProjectRow = { id: string; slug: string; name: string; abbr: string; description: string | null; status: string; sort: number; created_at: string; updated_at: string };
-type GoalRow = { id: string; code: string; title: string; project_id: string; period_start: string | null; period_end: string | null; status: string; note: string | null; created_at: string; updated_at: string };
-type PlanRow = { id: string; code: string; title: string; period_start: string; period_end: string; status: string; summary: string | null; raw_md: string; created_at: string; updated_at: string };
-type PlanItemRow = { id: string; plan_id: string; goal_id: string; code: string; seq: number; title: string; due_date: string | null; status: string; done_log_id: string | null; created_at: string; updated_at: string };
-type WorkLogRow = { id: string; code: string; log_date: string; author_name: string; summary: string | null; raw_md: string; task_count: number; done_count: number; hours_total: number; created_at: string; updated_at: string };
-type WorkItemRow = { id: string; log_id: string; seq: number; code: string; time_text: string | null; hour_end: number | null; title: string; project_id: string; goal_id: string | null; status: string; tags: string[]; body_md: string; created_at: string; updated_at: string };
-type WorkHourRow = { log_id: string; hour: number; value: number; label: string };
-type LogTodoRow = { id: string; log_id: string; seq: number; text: string; needs_decision: boolean; done: boolean; plan_item_id: string | null; created_at: string; updated_at: string };
-type ItemCompletionRow = { plan_item_id: string; log_id: string; created_at: string };
-type PromptRow = { id: string; title: string; purpose: string | null; body: string; sort: number; created_at: string; updated_at: string };
-type LinkRow = { id: string; from_type: string; from_id: string; to_type: string; to_code: string; kind: string; context: string | null; created_at: string; updated_at: string };
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      projects: Tbl<ProjectRow>;
-      goals: Tbl<GoalRow>;
-      plans: Tbl<PlanRow>;
-      plan_items: Tbl<PlanItemRow>;
-      work_logs: Tbl<WorkLogRow>;
-      work_items: Tbl<WorkItemRow>;
-      work_hours: Tbl<WorkHourRow>;
-      log_todos: Tbl<LogTodoRow>;
-      item_completions: Tbl<ItemCompletionRow>;
-      prompts: Tbl<PromptRow>;
-      links: Tbl<LinkRow>;
-    };
-    Views: Record<string, never>;
+      goals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          note: string | null
+          period_end: string | null
+          period_start: string | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_completions: {
+        Row: {
+          created_at: string
+          log_id: string
+          plan_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          log_id: string
+          plan_item_id: string
+        }
+        Update: {
+          created_at?: string
+          log_id?: string
+          plan_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_completions_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_completions_plan_item_id_fkey"
+            columns: ["plan_item_id"]
+            isOneToOne: true
+            referencedRelation: "plan_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      links: {
+        Row: {
+          context: string | null
+          created_at: string
+          from_id: string
+          from_type: string
+          id: string
+          kind: string
+          to_code: string
+          to_type: string
+          updated_at: string
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string
+          from_id: string
+          from_type: string
+          id?: string
+          kind?: string
+          to_code: string
+          to_type: string
+          updated_at?: string
+        }
+        Update: {
+          context?: string | null
+          created_at?: string
+          from_id?: string
+          from_type?: string
+          id?: string
+          kind?: string
+          to_code?: string
+          to_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      log_todos: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          log_id: string
+          needs_decision: boolean
+          plan_item_id: string | null
+          seq: number
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          log_id: string
+          needs_decision?: boolean
+          plan_item_id?: string | null
+          seq: number
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          log_id?: string
+          needs_decision?: boolean
+          plan_item_id?: string | null
+          seq?: number
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_todos_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_todos_plan_item_id_fkey"
+            columns: ["plan_item_id"]
+            isOneToOne: false
+            referencedRelation: "plan_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_items: {
+        Row: {
+          code: string
+          created_at: string
+          done_log_id: string | null
+          due_date: string | null
+          goal_id: string
+          id: string
+          plan_id: string
+          seq: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          done_log_id?: string | null
+          due_date?: string | null
+          goal_id: string
+          id?: string
+          plan_id: string
+          seq: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          done_log_id?: string | null
+          due_date?: string | null
+          goal_id?: string
+          id?: string
+          plan_id?: string
+          seq?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_items_done_log_fk"
+            columns: ["done_log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_items_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          raw_md: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          raw_md: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          raw_md?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          abbr: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          abbr: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          abbr?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          purpose: string | null
+          sort: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          purpose?: string | null
+          sort?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          purpose?: string | null
+          sort?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_hours: {
+        Row: {
+          hour: number
+          label: string
+          log_id: string
+          value: number
+        }
+        Insert: {
+          hour: number
+          label?: string
+          log_id: string
+          value: number
+        }
+        Update: {
+          hour?: number
+          label?: string
+          log_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_hours_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_items: {
+        Row: {
+          body_md: string
+          code: string
+          created_at: string
+          goal_id: string | null
+          hour_end: number | null
+          id: string
+          log_id: string
+          project_id: string
+          seq: number
+          status: string
+          tags: string[]
+          time_text: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body_md?: string
+          code: string
+          created_at?: string
+          goal_id?: string | null
+          hour_end?: number | null
+          id?: string
+          log_id: string
+          project_id: string
+          seq: number
+          status?: string
+          tags?: string[]
+          time_text?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          code?: string
+          created_at?: string
+          goal_id?: string | null
+          hour_end?: number | null
+          id?: string
+          log_id?: string
+          project_id?: string
+          seq?: number
+          status?: string
+          tags?: string[]
+          time_text?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "work_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_logs: {
+        Row: {
+          author_name: string
+          code: string
+          created_at: string
+          done_count: number
+          hours_total: number
+          id: string
+          log_date: string
+          raw_md: string
+          summary: string | null
+          task_count: number
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          code: string
+          created_at?: string
+          done_count?: number
+          hours_total?: number
+          id?: string
+          log_date: string
+          raw_md: string
+          summary?: string | null
+          task_count?: number
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          code?: string
+          created_at?: string
+          done_count?: number
+          hours_total?: number
+          id?: string
+          log_date?: string
+          raw_md?: string
+          summary?: string | null
+          task_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      assert_owner: { Args: Record<PropertyKey, never>; Returns: undefined };
-      list_projects: { Args: { p_include_archived?: boolean }; Returns: ProjectRow[] };
-      upsert_project: { Args: { p_id: string; p_slug: string; p_name: string; p_abbr: string; p_description: string; p_sort: number }; Returns: ProjectRow };
-      set_project_status: { Args: { p_id: string; p_status: string }; Returns: ProjectRow };
+      assert_owner: { Args: never; Returns: undefined }
+      context_pack: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: string
+      }
+      delete_goal: { Args: { p_id: string }; Returns: undefined }
+      delete_plan: { Args: { p_id: string }; Returns: undefined }
+      delete_prompt: { Args: { p_id: string }; Returns: undefined }
+      delete_work_log: { Args: { p_id: string }; Returns: undefined }
+      get_plan: { Args: { p_id: string }; Returns: Json }
+      get_work_log: { Args: { p_id: string }; Returns: Json }
+      home_stats: { Args: { p_date?: string }; Returns: Json }
+      insert_links: {
+        Args: { p_from_id: string; p_from_type: string; p_links: Json }
+        Returns: number
+      }
+      insert_plan: {
+        Args: {
+          p_code: string
+          p_goals: Json
+          p_items: Json
+          p_period_end: string
+          p_period_start: string
+          p_raw_md: string
+          p_summary: string
+          p_title: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          raw_md: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      insert_work_log: {
+        Args: {
+          p_author_name: string
+          p_completions: string[]
+          p_hours: Json
+          p_items: Json
+          p_log_date: string
+          p_raw_md: string
+          p_summary: string
+          p_todos: Json
+        }
+        Returns: {
+          author_name: string
+          code: string
+          created_at: string
+          done_count: number
+          hours_total: number
+          id: string
+          log_date: string
+          raw_md: string
+          summary: string | null
+          task_count: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_logs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       list_goals: {
-        Args: { p_status?: string };
+        Args: { p_status?: string }
         Returns: {
-          id: string; code: string; title: string; project_id: string; project_slug: string; project_name: string;
-          period_start: string | null; period_end: string | null; status: string; note: string | null;
-          item_count: number; done_count: number; created_at: string; updated_at: string;
-        }[];
-      };
-      upsert_goal: { Args: { p_id: string; p_title: string; p_project_slug: string; p_period_start: string; p_period_end: string; p_status: string; p_note: string }; Returns: GoalRow };
-      delete_goal: { Args: { p_id: string }; Returns: undefined };
-      insert_plan: { Args: { p_code: string; p_title: string; p_period_start: string; p_period_end: string; p_summary: string; p_raw_md: string; p_goals: Json; p_items: Json }; Returns: PlanRow };
+          code: string
+          created_at: string
+          done_count: number
+          id: string
+          item_count: number
+          note: string
+          period_end: string
+          period_start: string
+          project_id: string
+          project_name: string
+          project_slug: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
+      }
       list_plans: {
-        Args: Record<PropertyKey, never>;
+        Args: never
         Returns: {
-          id: string; code: string; title: string; period_start: string; period_end: string; status: string; summary: string | null;
-          goal_count: number; item_count: number; done_count: number; project_slugs: string[]; created_at: string;
-        }[];
-      };
-      get_plan: { Args: { p_id: string }; Returns: Json };
-      delete_plan: { Args: { p_id: string }; Returns: undefined };
-      set_plan_item_status: { Args: { p_id: string; p_status: string }; Returns: PlanItemRow };
-      insert_work_log: { Args: { p_log_date: string; p_author_name: string; p_summary: string; p_raw_md: string; p_items: Json; p_hours: Json; p_todos: Json; p_completions: string[] }; Returns: WorkLogRow };
+          code: string
+          created_at: string
+          done_count: number
+          goal_count: number
+          id: string
+          item_count: number
+          period_end: string
+          period_start: string
+          project_slugs: string[]
+          status: string
+          summary: string
+          title: string
+        }[]
+      }
+      list_projects: {
+        Args: { p_include_archived?: boolean }
+        Returns: {
+          abbr: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort: number
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      list_prompts: {
+        Args: never
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          purpose: string | null
+          sort: number
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "prompts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       list_work_logs: {
-        Args: { p_project_slug?: string; p_from?: string; p_to?: string; p_limit?: number };
+        Args: {
+          p_from?: string
+          p_limit?: number
+          p_project_slug?: string
+          p_to?: string
+        }
         Returns: {
-          id: string; code: string; log_date: string; author_name: string; summary: string | null; task_count: number; done_count: number;
-          hours_total: number; project_slugs: string[]; created_at: string;
-        }[];
-      };
-      get_work_log: { Args: { p_id: string }; Returns: Json };
-      delete_work_log: { Args: { p_id: string }; Returns: undefined };
-      set_log_todo_done: { Args: { p_id: string; p_done: boolean }; Returns: LogTodoRow };
-      list_prompts: { Args: Record<PropertyKey, never>; Returns: PromptRow[] };
-      upsert_prompt: { Args: { p_id: string; p_title: string; p_purpose: string; p_body: string }; Returns: PromptRow };
-      delete_prompt: { Args: { p_id: string }; Returns: undefined };
-      insert_links: { Args: { p_from_type: string; p_from_id: string; p_links: Json }; Returns: number };
-      context_pack: { Args: { p_from?: string; p_to?: string }; Returns: string };
-      home_stats: { Args: { p_date?: string }; Returns: Json };
-    };
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-};
+          author_name: string
+          code: string
+          created_at: string
+          done_count: number
+          hours_total: number
+          id: string
+          log_date: string
+          project_slugs: string[]
+          summary: string
+          task_count: number
+        }[]
+      }
+      set_log_todo_done: {
+        Args: { p_done: boolean; p_id: string }
+        Returns: {
+          created_at: string
+          done: boolean
+          id: string
+          log_id: string
+          needs_decision: boolean
+          plan_item_id: string | null
+          seq: number
+          text: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "log_todos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_plan_item_status: {
+        Args: { p_id: string; p_status: string }
+        Returns: {
+          code: string
+          created_at: string
+          done_log_id: string | null
+          due_date: string | null
+          goal_id: string
+          id: string
+          plan_id: string
+          seq: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "plan_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_project_status: {
+        Args: { p_id: string; p_status: string }
+        Returns: {
+          abbr: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_goal: {
+        Args: {
+          p_id: string
+          p_note: string
+          p_period_end: string
+          p_period_start: string
+          p_project_slug: string
+          p_status: string
+          p_title: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          id: string
+          note: string | null
+          period_end: string | null
+          period_start: string | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "goals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_project: {
+        Args: {
+          p_abbr: string
+          p_description: string
+          p_id: string
+          p_name: string
+          p_slug: string
+          p_sort: number
+        }
+        Returns: {
+          abbr: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_prompt: {
+        Args: {
+          p_body: string
+          p_id: string
+          p_purpose: string
+          p_title: string
+        }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          purpose: string | null
+          sort: number
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "prompts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
