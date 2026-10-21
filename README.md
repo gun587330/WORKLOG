@@ -17,9 +17,15 @@ worklog/
 
 1. Supabase 대시보드에서 새 프로젝트 생성 → Settings > API 에서 URL · anon · service_role 복사.
 2. 루트 `.env` 를 `.env.example` 대로, `web/.env.local` 을 `web/.env.local.example` 대로 작성.
-3. `supabase link --project-ref <ref>` → `npm run db:push` → `npm run gen:types`.
+3. `supabase login` 상태에서 `supabase link --project-ref <ref> -p ''` → `npm run db:push -- -p ''` → `npm run gen:types`.
+   DB 비밀번호는 필요 없다. CLI 가 관리 API 로 임시 로그인 역할을 만들어 연결한다(2026-10-21 확인).
 4. `npm run owner:create` 로 본인 계정 생성.
-5. `cd web && npm install && npm run dev` (포트 3001).
+5. `cd web && npm install && npm run dev` (포트 3001). anserx-code 가 3000 을 쓰므로 서버를 내릴 때는 `lsof -nP -iTCP:3001 -sTCP:LISTEN` 으로 PID 를 확인해 그것만 끝낸다.
+
+## 배포
+
+Vercel 프로젝트의 Root Directory 를 `web` 으로 두고 환경 변수에 `NEXT_PUBLIC_SUPABASE_URL` · `NEXT_PUBLIC_SUPABASE_ANON_KEY` 두 개만 넣는다. service_role 키는 어디에도 올리지 않는다.
+배포 뒤 Supabase 대시보드 Authentication > URL Configuration 의 Site URL 과 Redirect URLs 에 배포 주소를 추가한다.
 
 ## 규칙
 
