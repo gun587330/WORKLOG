@@ -60,8 +60,9 @@ export type HomeStats = {
 /** env 가 없으면(백엔드 미연결) createClient 가 던진다 — 화면이 사유를 말할 수 있게 봉투로 돌려보낸다 */
 async function call<K extends keyof Fn>(name: K, args?: Fn[K]["Args"]): Promise<ApiResult<Fn[K]["Returns"]>> {
   try {
-    const rpc = createClient().rpc as unknown as (fn: string, a?: unknown) => PromiseLike<{ data: unknown; error: unknown }>;
-    const res = await rpc(name as string, args);
+    // ⚠️ rpc 를 변수로 떼어 내 부르면 this 가 끊겨 "reading 'rest'" 로 터진다(2026-10-21 실연에서 발견). 반드시 client.rpc(...) 로 부른다
+    const client = createClient() as unknown as { rpc: (fn: string, a?: unknown) => PromiseLike<{ data: unknown; error: unknown }> };
+    const res = await client.rpc(name as string, args);
     if (res.error) return failFrom(res.error);
     return { data: res.data as Fn[K]["Returns"], error: null };
   } catch (e) {
