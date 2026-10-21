@@ -120,7 +120,11 @@
       "todayCount": "{count}건",
       "todayEmpty": "기한이 걸린 할 일이 없어요",
       "dueToday": "오늘",
-      "dueOver": "{days}일 지남"
+      "dueOver": "{days}일 지남",
+      "todoStart": "시작일",
+      "todoStartHint": "선택. 정하면 달력에 기간 줄로 보여요",
+      "legendRange": "= 기간 할 일",
+      "tipRanges": "기간 할 일 {count}건"
     },
     "logs": {
       "title": "작업 기록",

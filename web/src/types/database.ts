@@ -201,6 +201,7 @@ export type Database = {
           plan_item_id: string | null
           project_id: string | null
           seq: number
+          start_date: string | null
           text: string
           updated_at: string
         }
@@ -216,6 +217,7 @@ export type Database = {
           plan_item_id?: string | null
           project_id?: string | null
           seq?: number
+          start_date?: string | null
           text: string
           updated_at?: string
         }
@@ -231,6 +233,7 @@ export type Database = {
           plan_item_id?: string | null
           project_id?: string | null
           seq?: number
+          start_date?: string | null
           text?: string
           updated_at?: string
         }
@@ -869,6 +872,7 @@ export type Database = {
           plan_item_id: string | null
           project_id: string | null
           seq: number
+          start_date: string | null
           text: string
           updated_at: string
         }
@@ -1036,6 +1040,7 @@ export type Database = {
           p_note: string
           p_plan_item_code: string
           p_project_slug: string
+          p_start_date?: string
           p_text: string
         }
         Returns: {
@@ -1050,6 +1055,7 @@ export type Database = {
           plan_item_id: string | null
           project_id: string | null
           seq: number
+          start_date: string | null
           text: string
           updated_at: string
         }

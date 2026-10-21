@@ -125,8 +125,12 @@ function Kpi({ label, value, unit, hint, children }: { label: string; value: str
   );
 }
 
-/* ── 달력 ── */
-type Ev = { kind: "plan" | "log"; text: string; id?: string };
+/* ── 달력 ──
+ * 기간 할 일(시작일 ~ 기한)은 애플 캘린더처럼 여러 날을 잇는 줄로 그린다. 주(행)마다 겹치는 기간에 줄 번호(lane)를 나눠 주고,
+ * 각 칸은 자기 주의 줄 수만큼 자리를 먼저 깐 뒤(빈 줄은 같은 높이의 빈칸) 계획 · 기록 항목을 그 아래에 둔다.
+ * 그래서 같은 기간의 조각들이 가로로 한 줄에 맞물린다. 제목은 시작일과 주의 첫 칸(월요일)에만 쓴다. */
+type Ev = { kind: "plan" | "log" | "range"; text: string; id?: string };
+type Seg = { id: string; text: string; done: boolean; start: boolean; end: boolean; label: boolean; span: number };
 function Calendar({ today, name }: { today: string; name: (slug: string) => string }) {
   const t = useTranslations("wl.home");
   const router = useRouter();
@@ -161,6 +165,40 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
   }, [cal, name]);
 
   const cells = useMemo(() => (cal ? Array.from({ length: 42 }, (_, i) => addDays(cal.start, i)) : []), [cal]);
+
+  /* 주마다 기간 줄 배치: lanes[주][줄] = 그 줄을 쓰는 기간, cellLanes[날짜] = 그 칸의 줄별 조각(없으면 null) */
+  const { cellLanes, rangeByDate } = useMemo(() => {
+    const cellLanes = new Map<string, (Seg | null)[]>();
+    const rangeByDate = new Map<string, Ev[]>();
+    if (!cal) return { cellLanes, rangeByDate };
+    const ranges = (cal.ranges ?? []).slice().sort((a, b) => a.start.localeCompare(b.start) || b.end.localeCompare(a.end));
+    for (let w = 0; w < 6; w++) {
+      const days = cells.slice(w * 7, w * 7 + 7);
+      if (!days.length) continue;
+      const lanes: string[][] = [];          // 줄마다 차지한 날짜들
+      const rows: { r: (typeof ranges)[number]; lane: number }[] = [];
+      for (const r of ranges) {
+        const span = days.filter((d) => d >= r.start && d <= r.end);
+        if (!span.length) continue;
+        let lane = lanes.findIndex((used) => span.every((d) => !used.includes(d)));
+        if (lane < 0) { lane = lanes.length; lanes.push([]); }
+        lanes[lane].push(...span);
+        rows.push({ r, lane });
+      }
+      for (const d of days) {
+        const slots: (Seg | null)[] = Array(lanes.length).fill(null);
+        for (const { r, lane } of rows) {
+          if (d < r.start || d > r.end) continue;
+          const text = `${r.plan_item_code ? r.plan_item_code + " " : ""}${r.text}`;
+          const span = days.filter((x) => x >= d && x <= r.end).length;   // 이 칸부터 이 주 안에서 이어지는 칸 수(제목이 그만큼 뻗는다)
+          slots[lane] = { id: r.id, text, done: r.done, start: d === r.start, end: d === r.end, label: d === r.start || d === days[0], span };
+          (rangeByDate.get(d) ?? rangeByDate.set(d, []).get(d)!).push({ kind: "range", text: `${text} (${fmtMD(r.start)} ~ ${fmtMD(r.end)})` });
+        }
+        cellLanes.set(d, slots);
+      }
+    }
+    return { cellLanes, rangeByDate };
+  }, [cal, cells]);
   const showMonth = viewDate || today;
 
   return (
@@ -173,10 +211,15 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
       <div ref={gridRef} className={s.calGrid}>
         {DOW.map((d) => <div key={d} className={s.dow}>{d}</div>)}
         {cells.map((iso) => {
-          const evs = byDate.get(iso) ?? [];
+          const own = byDate.get(iso) ?? [];
+          const slots = cellLanes.get(iso) ?? [];
+          const lanesShown = slots.slice(0, maxEv);
+          const room = Math.max(0, maxEv - lanesShown.length);
+          const shown = own.length > room ? own.slice(0, Math.max(0, room - 1)) : own;
+          const hiddenRanges = slots.slice(maxEv).filter(Boolean).length;
+          const more = own.length - shown.length + hiddenRanges;
+          const evs = [...(rangeByDate.get(iso) ?? []), ...own];
           const dim = !sameMonth(iso, showMonth);
-          const shown = evs.length > maxEv ? evs.slice(0, Math.max(0, maxEv - 1)) : evs;
-          const more = evs.length - shown.length;
           return (
             <div
               key={iso}
@@ -191,6 +234,11 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
               onMouseLeave={() => setTip(null)}
             >
               <span className={s.dn}>{parseISO(iso).getDate()}</span>
+              {lanesShown.map((seg, i) => seg ? (
+                <div key={`r${i}`} className={`${s.rangeSeg} ${seg.label ? s.rangeLabel : ""} ${seg.start ? s.rangeStart : ""} ${seg.end ? s.rangeEnd : ""} ${seg.done ? s.rangeDone : ""}`} title={seg.text} style={{ "--span": seg.span } as React.CSSProperties}>
+                  {seg.label ? <span>{seg.text}</span> : null}
+                </div>
+              ) : <div key={`r${i}`} className={s.rangeGap} aria-hidden="true" />)}
               {shown.map((ev, i) => ev.kind === "log" ? (
                 <button key={i} type="button" className={`${s.ev} ${s.evDone} ${s.evLink}`} onClick={() => router.push(`/logs/${ev.id}`)}><i /><span>{ev.text}</span></button>
               ) : (
@@ -202,6 +250,7 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
         })}
       </div>
       <div className={s.calFoot}>
+        <span><i className={`${s.sw} ${s.swRange}`} /> {t("legendRange")}</span>
         <span><i className={s.sw} /> {t("legendPlanned")}</span>
         <span><i className={`${s.sw} ${s.swDone}`} /> {t("legendDone")}</span>
         <span>{t("legendMore")}</span>
@@ -210,6 +259,10 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
       {tip && (
         <div className={s.calTip} style={{ left: tip.left, top: tip.top, transform: tip.up ? "translateY(-100%)" : undefined }}>
           <div className={s.tipDate}>{fmtKDate(tip.date)}</div>
+          {tip.evs.some((e) => e.kind === "range") && <>
+            <div className={s.tipGroup}>{t("tipRanges", { count: tip.evs.filter((e) => e.kind === "range").length })}</div>
+            {tip.evs.filter((e) => e.kind === "range").map((e, i) => <div key={i} className={`${s.ev} ${s.evRange}`}><i /><span>{e.text}</span></div>)}
+          </>}
           {tip.evs.some((e) => e.kind === "plan") && <>
             <div className={s.tipGroup}>{t("tipPlanned", { count: tip.evs.filter((e) => e.kind === "plan").length })}</div>
             {tip.evs.filter((e) => e.kind === "plan").map((e, i) => <div key={i} className={s.ev}><i /><span>{e.text}</span></div>)}
@@ -227,7 +280,7 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
 /* ── 앞으로 할 일: 계획 항목(미완) + 기록의 할 일(최근 14일) + 직접 추가한 할 일. 체크 = 저장. 행(체크 제외)을 누르면 폼이 열리고 수정 · 삭제는 폼 안에서 ── */
 type TodoRow = {
   key: string; kind: "plan" | "log"; id: string; code: string | null; text: string; done: boolean; ask: boolean; source: string; due: string | null;
-  projectSlug: string | null; goalCode: string | null; logId: string | null; note: string | null;
+  projectSlug: string | null; goalCode: string | null; logId: string | null; note: string | null; start: string | null;
 };
 function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading: boolean; name: (slug: string) => string }) {
   const t = useTranslations("wl.home");
@@ -240,13 +293,13 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
     const active = stats.active_plan?.code;
     const plan: TodoRow[] = stats.plan_items_open.map((p) => ({
       key: `p-${p.id}`, kind: "plan", id: p.id, code: p.code, text: p.text, done: p.done, ask: false,
-      source: p.source === active ? t("srcThisPlan") : p.source, due: p.due_date, projectSlug: null, goalCode: null, logId: null, note: null,
+      source: p.source === active ? t("srcThisPlan") : p.source, due: p.due_date, projectSlug: null, goalCode: null, logId: null, note: null, start: null,
     }));
     const linked = new Set(stats.todos.map((x) => x.plan_item_code).filter(Boolean));
     const log: TodoRow[] = stats.todos.map((x) => ({
       key: `l-${x.id}`, kind: "log", id: x.id, code: x.plan_item_code, text: x.text, done: x.done, ask: x.needs_decision,
       source: x.source ? t("srcLog", { date: logCodeToMD(x.source) }) : t("srcManual"), due: x.due_date,
-      projectSlug: x.project_slug, goalCode: x.goal_code, logId: x.log_id, note: x.note,
+      projectSlug: x.project_slug, goalCode: x.goal_code, logId: x.log_id, note: x.note, start: x.start_date,
     }));
     const all = [...plan.filter((p) => !linked.has(p.code)), ...log];
     const rank = (r: TodoRow) => (r.done ? 3 : r.ask ? 0 : r.kind === "plan" ? 1 : 2);
@@ -260,7 +313,7 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
     else setPlan.mutate({ id: r.id, status: r.done ? "open" : "done" });
   };
   const edit = (r: TodoRow) => setForm({ open: true, todo: {
-    id: r.id, text: r.text, needsDecision: r.ask, projectSlug: r.projectSlug, goalCode: r.goalCode, planItemCode: r.code, dueDate: r.due, note: r.note, done: r.done,
+    id: r.id, text: r.text, needsDecision: r.ask, projectSlug: r.projectSlug, goalCode: r.goalCode, planItemCode: r.code, startDate: r.start, dueDate: r.due, note: r.note, done: r.done,
   } });
 
   return (
@@ -282,7 +335,7 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
               {(r.projectSlug || r.due) && (
                 <span className={s.todoMeta}>
                   {r.projectSlug && <Chip static size="sm" tone="accent">{name(r.projectSlug)}</Chip>}
-                  {r.due && <span className={s.todoDue}>{fmtMD(r.due)}</span>}
+                  {r.due && <span className={s.todoDue}>{r.start ? `${fmtMD(r.start)} ~ ${fmtMD(r.due)}` : fmtMD(r.due)}</span>}
                 </span>
               )}
             </span>

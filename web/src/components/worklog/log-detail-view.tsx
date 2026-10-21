@@ -202,7 +202,7 @@ function LogTodos({ todos, name }: { todos: WorkLogDetail["todos"]; name: (slug:
   const planItems = useMemo(() => (home.data?.plan_items_open ?? []).map((p) => ({ code: p.code, text: p.text, done: p.done })), [home.data]);
   const [form, setForm] = useState<{ open: boolean; todo: TodoFormValue | null }>({ open: false, todo: null });
   if (todos.length === 0) return null;
-  const edit = (td: WorkLogDetail["todos"][number]) => setForm({ open: true, todo: { id: td.id, text: td.text, needsDecision: td.needs_decision, projectSlug: td.project_slug, goalCode: td.goal_code, planItemCode: td.plan_item_code, dueDate: td.due_date, note: td.note, done: td.done } });
+  const edit = (td: WorkLogDetail["todos"][number]) => setForm({ open: true, todo: { id: td.id, text: td.text, needsDecision: td.needs_decision, projectSlug: td.project_slug, goalCode: td.goal_code, planItemCode: td.plan_item_code, startDate: td.start_date, dueDate: td.due_date, note: td.note, done: td.done } });
   return (
     <section className={s.card}>
       <p className={s.secLab} style={{ marginBottom: ".5rem" }}>{t("todos")} <small>{tc("countUnit", { count: todos.length })}</small></p>

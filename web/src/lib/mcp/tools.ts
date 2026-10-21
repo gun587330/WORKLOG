@@ -348,7 +348,7 @@ export const TOOLS: Tool[] = [
         id: { type: "string", description: "preview 때만. 고칠 할 일 id(list_todos). 새 할 일이면 비운다." },
         text: { type: "string" }, needs_decision: { type: "boolean" },
         project_code: { type: "string" }, goal_code: { type: "string" }, plan_item_code: { type: "string" },
-        due_date: { type: "string", description: "YYYY-MM-DD" }, note: { type: "string" }, done: { type: "boolean" },
+        start_date: { type: "string", description: "YYYY-MM-DD, 선택. 기한과 함께 쓰면 달력에 기간으로 보인다" }, due_date: { type: "string", description: "YYYY-MM-DD" }, note: { type: "string" }, done: { type: "boolean" },
         project_confirmed: { type: "boolean", description: "commit 때만" },
       },
       required: ["mode"],
@@ -364,7 +364,7 @@ export const TOOLS: Tool[] = [
       const payload = {
         id: str(a.id) || null, text: str(a.text), needs_decision: a.needs_decision === true, project_slug: slug,
         goal_code: str(a.goal_code).toUpperCase() || null, plan_item_code: str(a.plan_item_code).toUpperCase() || null,
-        due_date: str(a.due_date) || null, note: str(a.note) || null, done: typeof a.done === "boolean" ? a.done : null,
+        start_date: str(a.start_date) || null, due_date: str(a.due_date) || null, note: str(a.note) || null, done: typeof a.done === "boolean" ? a.done : null,
       };
       const prep = await prepare(ctx, "save_todo", payload);
       return {

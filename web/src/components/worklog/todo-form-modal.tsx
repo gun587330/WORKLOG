@@ -19,7 +19,7 @@ import s from "./worklog.module.css";
 
 export type TodoFormValue = {
   id: string | null; text: string; needsDecision: boolean; projectSlug: string | null; goalCode: string | null;
-  planItemCode: string | null; dueDate: string | null; note: string | null; done: boolean;
+  planItemCode: string | null; startDate: string | null; dueDate: string | null; note: string | null; done: boolean;
 };
 export type PlanItemOption = { code: string; text: string; done: boolean };
 
@@ -37,6 +37,7 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
   const [project, setProject] = useState<string | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
   const [planItem, setPlanItem] = useState<string | null>(null);
+  const [start, setStart] = useState("");
   const [due, setDue] = useState("");
   const [note, setNote] = useState("");
   const [state, setState] = useState<"open" | "done">("open");
@@ -45,7 +46,7 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
     if (!open) return;
     setText(todo?.text ?? ""); setAsk(todo?.needsDecision ? "ask" : "normal");
     setProject(todo?.projectSlug ?? null); setGoal(todo?.goalCode ?? null); setPlanItem(todo?.planItemCode ?? null);
-    setDue(todo?.dueDate ?? ""); setNote(todo?.note ?? ""); setState(todo?.done ? "done" : "open");
+    setStart(todo?.startDate ?? ""); setDue(todo?.dueDate ?? ""); setNote(todo?.note ?? ""); setState(todo?.done ? "done" : "open");
   }, [open, todo]);
 
   const goalOptions = useMemo(() => (goals.data ?? []).filter((g) => !project || g.project_slug === project), [goals.data, project]);
@@ -64,7 +65,7 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
   };
   const submit = async () => {
     try {
-      await upsert.mutateAsync({ id: todo?.id ?? null, text: text.trim(), needsDecision: ask === "ask", projectSlug: project, goalCode: goal, planItemCode: planItem, dueDate: due || null, note, done: state === "done" });
+      await upsert.mutateAsync({ id: todo?.id ?? null, text: text.trim(), needsDecision: ask === "ask", projectSlug: project, goalCode: goal, planItemCode: planItem, startDate: start || null, dueDate: due || null, note, done: state === "done" });
       toast({ title: t("todoSaved"), variant: "success" });
       onClose();
     } catch (e) {
@@ -81,7 +82,7 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
       footer={<>
         {todo && <Button variant="danger" className={s.footerLeft} onClick={() => setConfirm(true)}>{tc("delete")}</Button>}
         <Button variant="secondary" onClick={onClose}>{tc("cancel")}</Button>
-        <Button onClick={submit} disabled={!text.trim()} loading={upsert.isPending}>{tc("save")}</Button>
+        <Button onClick={submit} disabled={!text.trim() || (!!start && (!due || start > due))} loading={upsert.isPending}>{tc("save")}</Button>
       </>}
     >
       <div className={s.form}>
@@ -122,7 +123,8 @@ export function TodoFormModal({ open, todo, planItems, onClose }: { open: boolea
           </div>
         </div>
         <div className={s.twoCol}>
-          <Field label={t("todoDue")} type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+          <Field label={t("todoStart")} type="date" value={start} max={due || undefined} onChange={(e) => setStart(e.target.value)} hint={t("todoStartHint")} />
+          <Field label={t("todoDue")} type="date" value={due} min={start || undefined} onChange={(e) => setDue(e.target.value)} />
         </div>
         <Textarea label={t("todoNote")} value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
         <p className={s.hint}>{t("todoFormHint")}</p>
