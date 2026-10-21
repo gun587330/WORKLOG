@@ -11,6 +11,9 @@ import { isPublicPath, splitLocale } from "@/lib/public-paths";
 
 export function SessionGuard() {
   useEffect(() => {
+    // env 가 없으면(배포에 환경 변수를 안 넣은 상태) createClient 가 던져 화면 전체가 오류 경계("화면을 불러오지 못했어요")로
+    // 떨어진다(2026-10-22 Vercel 첫 배포). 감시를 건너뛰고 로그인 화면의 안내가 사유를 말하게 둔다.
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) return;
     const { data: sub } = createClient().auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_OUT") return;
       if (consumeIntentionalSignOut()) return;
