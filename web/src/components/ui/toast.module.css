@@ -7,15 +7,16 @@
  *   close  absolute right-2 top-2 · opacity-0 → hover 시 표시
  *   title  text-sm font-semibold  /  description  text-sm (같은 크기)
  *
- * 2026-08-03 대표 지시:
- *   위치   우측 상단
+ * 2026-08-03 지시(ANSERX):
+ *   위치   우측 상단 → WORK LOG 는 **좌측 상단**(2026-10-21 지시). 사이드바(--sidebar-w)를 가리지 않게 그만큼 띄우고,
+ *          모바일(사이드바 없음)에서는 왼쪽 끝. 로그인 실패 같은 폼 오류도 인라인 대신 이 토스트로 띄운다(알림 방식 단일화)
  *   표면   불투명 흰 카드 + 그림자 (유리 아님)
  *   강조   제목 색(테마 토큰) 하나로. 테두리·좌측 바·아이콘 미사용
  */
 
 .viewport {
   position: fixed;
-  right: 0;
+  left: var(--sidebar-w);
   top: 0;
   z-index: 200;              /* 모달(100)보다 위 — 모달 안 액션의 결과도 보여야 한다 */
   display: flex;
@@ -95,4 +96,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .toast { animation: none; }
+}
+
+@media (max-width: 768px) {
+  .viewport { left: 0; }
 }
