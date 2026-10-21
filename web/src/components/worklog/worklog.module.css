@@ -472,6 +472,27 @@
 }
 .todoSrc a { color: inherit; text-decoration: none; }
 .todoSrc a:hover { text-decoration: underline; }
+.todoMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: 0.375rem;
+  vertical-align: middle;
+}
+.todoDue {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+}
+.todoActs {
+  display: flex;
+  gap: 0.25rem;
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.todo li:hover .todoActs,
+.todoActs:focus-within { opacity: 1; }
 
 /* 진행 중인 계획 */
 .goal {
@@ -1219,16 +1240,16 @@
   gap: 1rem;
   align-items: center;
   padding: 1rem 1.25rem;
-  border-radius: 1.125rem;
-  background: var(--paper);
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 1rem;
+  background: var(--bg-soft);      /* 목표 행 · 기록 카드와 같은 회색 면, 테두리 없음 (2026-10-21 지시) */
+  border: 0;
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
-  transition: box-shadow 0.15s ease;
+  transition: background 0.15s ease;
 }
-.plan:hover { box-shadow: 0 0.5rem 1.5rem rgba(20, 20, 28, 0.08); }
+.plan:hover { background: var(--accent-tint); }
 .planPer {
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.6875rem;

@@ -29,6 +29,9 @@
 | 0005 | `work_logs` | `work_logs` · `work_items` · `work_hours` · `log_todos` · `item_completions` + RPC(insert_work_log 가 한 트랜잭션으로 전부 적재) |
 | 0006 | `prompts` | 테이블 + RPC + 시드(기록용 · 계획용) |
 | 0007 | `links_context` | `links` + `context_pack(p_from, p_to)` + 홈 집계 RPC(`home_stats`) |
+| 0008 | `prompts_project_confirm` | 프롬프트 2종 본문 개정: 프로젝트(분류)는 사용자 확인 뒤에만 적는다(루트 CLAUDE.md 절대규칙 10) |
+| 0009 | `home_stats_week_projects` | 홈 「이번 주 투입」 프로젝트별 합이 총투입을 넘던 중복 합산 수정 |
+| 0010 | `todos_standalone` | `log_todos.log_id` 선택화 + `project_id` · `goal_id` · `due_date` · `note` + `upsert_todo` · `delete_todo`, `home_stats` · `context_pack` 재정의 |
 
 ## 10. 결정 로그
 
@@ -40,3 +43,6 @@
 | 목표 코드는 시퀀스, 삭제해도 재사용 안 함 | 과거 기록이 `G12` 를 가리키는데 다른 목표가 그 코드를 얻으면 뇌가 망가진다 |
 | 서버 파서 없음 | 클라이언트 파서 한 벌이 검수 화면과 적재 둘 다 맡는다. 두 벌이면 어긋난다 |
 | `links` 를 1차부터 저장 | 3차 UI 때 과거 기록을 다시 파싱하지 않기 위해. 저장은 싸다 |
+
+- 2026-10-21 (0010) 「앞으로 할 일」을 화면에서 직접 추가 · 수정 · 삭제하게 했다. 새 표를 만들지 않고 `log_todos.log_id` 를 선택으로 풀어 한 표에 둔 이유: 홈 목록 · 컨텍스트 팩 · 체크 RPC 가 이미 이 표를 보고 있어서, 표를 나누면 세 곳이 두 표를 합쳐야 한다. 기록에서 온 할 일을 폼으로 고쳐도 `raw_md` 는 건드리지 않는다(절대규칙 8).
+

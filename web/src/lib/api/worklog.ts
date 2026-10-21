@@ -49,7 +49,10 @@ export type HomeStats = {
     planned: { date: string; code: string; title: string; status: string; goal_code: string }[];
     logs: { date: string; id: string; code: string; hours: number; projects: string[] }[];
   };
-  todos: { kind: "log"; id: string; text: string; needs_decision: boolean; done: boolean; source: string; plan_item_code: string | null }[];
+  todos: {
+    kind: "log"; id: string; text: string; needs_decision: boolean; done: boolean; source: string | null; log_id: string | null;
+    plan_item_code: string | null; project_slug: string | null; goal_code: string | null; due_date: string | null; note: string | null;
+  }[];
   plan_items_open: { kind: "plan"; id: string; code: string; text: string; done: boolean; due_date: string | null; source: string }[];
   active_plan: {
     id: string; code: string; title: string; period_start: string; period_end: string;
@@ -155,6 +158,19 @@ export async function insertWorkLog(parsed: ParsedWorkLog, rawMd: string): Promi
 }
 export const deleteWorkLog = (id: string) => call("delete_work_log", { p_id: id });
 export const setLogTodoDone = (id: string, done: boolean) => call("set_log_todo_done", { p_id: id, p_done: done });
+
+/* ── 할 일(직접 추가 · 수정 · 삭제, 0010). 기록에서 온 할 일도 같은 폼으로 고친다 ── */
+export type TodoInput = {
+  id?: string | null; text: string; needsDecision: boolean; projectSlug?: string | null; goalCode?: string | null;
+  planItemCode?: string | null; dueDate?: string | null; note?: string | null; done?: boolean | null;
+};
+export const upsertTodo = (i: TodoInput) =>
+  call("upsert_todo", {
+    p_id: nullId(i.id), p_text: i.text, p_needs_decision: i.needsDecision,
+    p_project_slug: nullStr(i.projectSlug), p_goal_code: nullStr(i.goalCode), p_plan_item_code: nullStr(i.planItemCode),
+    p_due_date: nullStr(i.dueDate), p_note: nullStr(i.note), p_done: (i.done ?? null) as unknown as boolean,
+  });
+export const deleteTodo = (id: string) => call("delete_todo", { p_id: id });
 
 /* ── 프롬프트 ── */
 export const getPrompts = () => call("list_prompts");

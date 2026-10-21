@@ -10,7 +10,7 @@ import {
   getProjects, upsertProject, setProjectStatus, type ProjectInput,
   getGoals, upsertGoal, deleteGoal, type GoalInput,
   getPlans, getPlan, insertPlan, deletePlan, setPlanItemStatus,
-  getWorkLogs, getWorkLog, insertWorkLog, deleteWorkLog, setLogTodoDone, type LogFilter,
+  getWorkLogs, getWorkLog, insertWorkLog, deleteWorkLog, setLogTodoDone, upsertTodo, deleteTodo, type LogFilter, type TodoInput,
   getPrompts, upsertPrompt, deletePrompt, type PromptInput,
   getContextPack, getHomeStats,
 } from "@/lib/api/worklog";
@@ -126,6 +126,21 @@ export function useSetLogTodoDone() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { id: string; done: boolean }) => setLogTodoDone(v.id, v.done).then(unwrap),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
+  });
+}
+
+export function useUpsertTodo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (i: TodoInput) => upsertTodo(i).then(unwrap),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
+  });
+}
+export function useDeleteTodo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTodo(id).then(unwrap),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
   });
 }

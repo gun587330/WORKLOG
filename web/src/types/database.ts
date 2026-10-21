@@ -159,10 +159,14 @@ export type Database = {
         Row: {
           created_at: string
           done: boolean
+          due_date: string | null
+          goal_id: string | null
           id: string
-          log_id: string
+          log_id: string | null
           needs_decision: boolean
+          note: string | null
           plan_item_id: string | null
+          project_id: string | null
           seq: number
           text: string
           updated_at: string
@@ -170,26 +174,41 @@ export type Database = {
         Insert: {
           created_at?: string
           done?: boolean
+          due_date?: string | null
+          goal_id?: string | null
           id?: string
-          log_id: string
+          log_id?: string | null
           needs_decision?: boolean
+          note?: string | null
           plan_item_id?: string | null
-          seq: number
+          project_id?: string | null
+          seq?: number
           text: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           done?: boolean
+          due_date?: string | null
+          goal_id?: string | null
           id?: string
-          log_id?: string
+          log_id?: string | null
           needs_decision?: boolean
+          note?: string | null
           plan_item_id?: string | null
+          project_id?: string | null
           seq?: number
           text?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "log_todos_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "log_todos_log_id_fkey"
             columns: ["log_id"]
@@ -202,6 +221,13 @@ export type Database = {
             columns: ["plan_item_id"]
             isOneToOne: false
             referencedRelation: "plan_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_todos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -532,6 +558,7 @@ export type Database = {
       delete_goal: { Args: { p_id: string }; Returns: undefined }
       delete_plan: { Args: { p_id: string }; Returns: undefined }
       delete_prompt: { Args: { p_id: string }; Returns: undefined }
+      delete_todo: { Args: { p_id: string }; Returns: undefined }
       delete_work_log: { Args: { p_id: string }; Returns: undefined }
       get_plan: { Args: { p_id: string }; Returns: Json }
       get_work_log: { Args: { p_id: string }; Returns: Json }
@@ -700,10 +727,14 @@ export type Database = {
         Returns: {
           created_at: string
           done: boolean
+          due_date: string | null
+          goal_id: string | null
           id: string
-          log_id: string
+          log_id: string | null
           needs_decision: boolean
+          note: string | null
           plan_item_id: string | null
+          project_id: string | null
           seq: number
           text: string
           updated_at: string
@@ -832,6 +863,40 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "prompts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_todo: {
+        Args: {
+          p_done: boolean
+          p_due_date: string
+          p_goal_code: string
+          p_id: string
+          p_needs_decision: boolean
+          p_note: string
+          p_plan_item_code: string
+          p_project_slug: string
+          p_text: string
+        }
+        Returns: {
+          created_at: string
+          done: boolean
+          due_date: string | null
+          goal_id: string | null
+          id: string
+          log_id: string | null
+          needs_decision: boolean
+          note: string | null
+          plan_item_id: string | null
+          project_id: string | null
+          seq: number
+          text: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "log_todos"
           isOneToOne: true
           isSetofReturn: false
         }

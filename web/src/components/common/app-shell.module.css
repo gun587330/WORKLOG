@@ -55,8 +55,8 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
+  gap: 0.4375rem;
+  font-size: 0.875rem;             /* 1rem 이었으나 9.5rem 네브바에서 접기 버튼이 밖으로 밀렸다(2026-10-21). 글자는 WORKLOG 로 붙여 쓴다 */
   font-weight: 900;
   letter-spacing: -0.04em;
   color: var(--ink);
@@ -64,8 +64,8 @@
   white-space: nowrap;
 }
 .logo i {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 0.35rem;
   background: var(--accent);
   display: inline-block;

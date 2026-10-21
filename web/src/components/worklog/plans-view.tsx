@@ -186,7 +186,7 @@ function PlanDetailModal({ id, onClose, name }: { id: string | null; onClose: ()
       size="lg"
       titleAside={d ? <span className={s.code}>{d.plan.code}</span> : undefined}
       footer={<>
-        <Button variant="danger" size="sm" onClick={() => setConfirm(true)}>{t("deletePlan")}</Button>
+        <Button variant="danger" onClick={() => setConfirm(true)}>{t("deletePlan")}</Button>
         <Button variant="secondary" onClick={onClose}>{tc("close")}</Button>
       </>}
     >
