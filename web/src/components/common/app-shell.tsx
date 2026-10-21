@@ -2,23 +2,24 @@
 
 /**
  * 앱 셸 — 좌측 네브바 + 콘텐츠 (ANSERX common/app-shell 에서 옮김 · 바뀐 점: 투어 · 알림 · 시작 가이드 ·
- * 미리보기 게이트 · side 분기 없음. 메뉴 4개 고정(개인 = 2026-10-22 추가). 접힘은 "아이콘만 남김" 이 아니라 **완전히 숨기고
+ * 미리보기 게이트 · side 분기 없음. 메뉴 5개 고정(스크랩 · 개인 = 2026-10-22 추가). 접힘은 "아이콘만 남김" 이 아니라 **완전히 숨기고
  * 좌상단 펼침 버튼만** 남긴다(2026-10-21 결정). 모바일은 상단 바 + 하단 탭바 그대로.)
  */
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Home, NotebookPen, Target, UserRound, PanelLeftClose, PanelLeftOpen, LogOut, type LucideIcon } from "lucide-react";
+import { Home, NotebookPen, Target, UserRound, Paperclip, PanelLeftClose, PanelLeftOpen, LogOut, type LucideIcon } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { signOut } from "@/lib/api/auth";
 import s from "./app-shell.module.css";
 
-type NavLabelKey = "home" | "logs" | "plans" | "me";
+type NavLabelKey = "home" | "logs" | "plans" | "scraps" | "me";
 type NavItem = { href: string; labelKey: NavLabelKey; icon: LucideIcon };
 
 const NAV: NavItem[] = [
   { href: "/home", labelKey: "home", icon: Home },
   { href: "/logs", labelKey: "logs", icon: NotebookPen },
   { href: "/plans", labelKey: "plans", icon: Target },
+  { href: "/scraps", labelKey: "scraps", icon: Paperclip },
   { href: "/me", labelKey: "me", icon: UserRound },
 ];
 

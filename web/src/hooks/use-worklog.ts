@@ -14,6 +14,7 @@ import {
   getPrompts, upsertPrompt, deletePrompt, type PromptInput,
   getContextPack, getHomeStats,
   getDiary, upsertDiary, deleteDiary, type DiaryInput,
+  getScraps, uploadScrapFile, addScrapLink, updateScrap, deleteScrap, type Scrap,
 } from "@/lib/api/worklog";
 import type { ParsedWorkLog } from "@/lib/work-log";
 import type { ParsedWorkPlan } from "@/lib/work-plan";
@@ -178,5 +179,29 @@ export function useUpsertDiary() {
 export function useDeleteDiary() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: (id: string) => deleteDiary(id).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["diary"] }) });
+}
+
+/* ── 스크랩 ── */
+export function useScraps() {
+  return useQuery({ queryKey: ["scraps"], queryFn: () => getScraps().then(unwrap) });
+}
+export function useUploadScrapFile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { file: File; title: string; note: string; tags: string[] }) => uploadScrapFile(v.file, v).then(unwrap),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["scraps"] }),
+  });
+}
+export function useAddScrapLink() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (v: { url: string; title: string; note: string; tags: string[] }) => addScrapLink(v).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["scraps"] }) });
+}
+export function useUpdateScrap() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (v: { scrap: Scrap; title: string; note: string; tags: string[]; url?: string }) => updateScrap(v.scrap, v).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["scraps"] }) });
+}
+export function useDeleteScrap() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: string) => deleteScrap(id).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["scraps"] }) });
 }
 

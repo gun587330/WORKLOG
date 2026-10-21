@@ -473,6 +473,54 @@ export type Database = {
         }
         Relationships: []
       }
+      scraps: {
+        Row: {
+          code: string
+          created_at: string
+          file_name: string | null
+          id: string
+          kind: string
+          mime_type: string | null
+          note: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          kind: string
+          mime_type?: string | null
+          note?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          note?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       work_hours: {
         Row: {
           hour: number
@@ -631,6 +679,7 @@ export type Database = {
       delete_goal: { Args: { p_id: string }; Returns: undefined }
       delete_plan: { Args: { p_id: string }; Returns: undefined }
       delete_prompt: { Args: { p_id: string }; Returns: undefined }
+      delete_scrap: { Args: { p_id: string }; Returns: string }
       delete_todo: { Args: { p_id: string }; Returns: undefined }
       delete_work_log: { Args: { p_id: string }; Returns: undefined }
       get_plan: { Args: { p_id: string }; Returns: Json }
@@ -814,6 +863,30 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "prompts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      list_scraps: {
+        Args: never
+        Returns: {
+          code: string
+          created_at: string
+          file_name: string | null
+          id: string
+          kind: string
+          mime_type: string | null
+          note: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "scraps"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -1026,6 +1099,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "prompts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_scrap: {
+        Args: {
+          p_file_name: string
+          p_id: string
+          p_kind: string
+          p_links: Json
+          p_mime_type: string
+          p_note: string
+          p_size_bytes: number
+          p_storage_path: string
+          p_tags: string[]
+          p_title: string
+          p_url: string
+        }
+        Returns: {
+          code: string
+          created_at: string
+          file_name: string | null
+          id: string
+          kind: string
+          mime_type: string | null
+          note: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "scraps"
           isOneToOne: true
           isSetofReturn: false
         }

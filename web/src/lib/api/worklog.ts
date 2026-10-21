@@ -199,3 +199,48 @@ export const upsertDiary = (i: DiaryInput) =>
   });
 export const deleteDiary = (id: string) => call("delete_diary", { p_id: id });
 
+/* ── 스크랩 (0020). 파일 본체는 Storage 비공개 버킷 'scraps', 표에는 메타데이터 ── */
+export type Scrap = Tables["scraps"]["Row"];
+export const SCRAP_MAX_BYTES = 50 * 1024 * 1024;
+export const getScraps = () => call("list_scraps");
+
+/** 파일 하나 올리기: Storage 에 올린 뒤 표에 기록. 표 기록이 실패하면 올린 파일을 지운다 */
+export async function uploadScrapFile(file: File, meta: { title: string; note: string; tags: string[] }): Promise<ApiResult<Scrap>> {
+  if (file.size > SCRAP_MAX_BYTES) return { data: null, error: { message: "파일이 50MB 를 넘어요" } };
+  const sb = createClient();
+  const safe = file.name.normalize("NFC").replace(/[^\w.\-가-힣]+/g, "_").slice(-120) || "file";
+  const path = `${crypto.randomUUID()}/${safe}`;
+  const up = await sb.storage.from("scraps").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+  if (up.error) return failFrom(up.error);
+  const res = await call("upsert_scrap", {
+    p_id: nullId(null), p_kind: "file", p_title: meta.title || file.name, p_note: meta.note, p_tags: meta.tags,
+    p_url: nullStr(null), p_storage_path: path, p_file_name: file.name, p_mime_type: file.type || "application/octet-stream",
+    p_size_bytes: file.size, p_links: toLinks(extractWikiLinks(meta.note)),
+  });
+  if (res.error) await sb.storage.from("scraps").remove([path]);
+  return res;
+}
+export const addScrapLink = (meta: { url: string; title: string; note: string; tags: string[] }) =>
+  call("upsert_scrap", {
+    p_id: nullId(null), p_kind: "link", p_title: meta.title || meta.url, p_note: meta.note, p_tags: meta.tags, p_url: meta.url,
+    p_storage_path: nullStr(null), p_file_name: nullStr(null), p_mime_type: nullStr(null), p_size_bytes: null as unknown as number,
+    p_links: toLinks(extractWikiLinks(meta.note)),
+  });
+export const updateScrap = (s: Scrap, meta: { title: string; note: string; tags: string[]; url?: string }) =>
+  call("upsert_scrap", {
+    p_id: s.id, p_kind: s.kind, p_title: meta.title, p_note: meta.note, p_tags: meta.tags, p_url: nullStr(meta.url ?? s.url),
+    p_storage_path: nullStr(null), p_file_name: nullStr(null), p_mime_type: nullStr(null), p_size_bytes: null as unknown as number,
+    p_links: toLinks(extractWikiLinks(meta.note)),
+  });
+export async function deleteScrap(id: string): Promise<ApiResult<null>> {
+  const res = await call("delete_scrap", { p_id: id });
+  if (res.error) return res as ApiResult<null>;
+  if (res.data) await createClient().storage.from("scraps").remove([res.data as string]);
+  return { data: null, error: null };
+}
+/** 비공개 파일을 잠깐 여는 주소(1시간) */
+export async function scrapSignedUrl(path: string, download?: string): Promise<string | null> {
+  const r = await createClient().storage.from("scraps").createSignedUrl(path, 3600, download ? { download } : undefined);
+  return r.data?.signedUrl ?? null;
+}
+

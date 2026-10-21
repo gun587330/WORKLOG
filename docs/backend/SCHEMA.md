@@ -37,6 +37,10 @@
 | 0013 | `mcp_goal_by_code` | MCP save_goal 이 목표를 코드(G12)로 가리킨다 |
 | 0014 | `mcp_confirm_short_kst` | 한 글자 승인("네") 허용, 컨텍스트 팩 날짜를 한국 시간으로 |
 | 0016 | `mcp_prompts` | 프롬프트 모음을 MCP 프롬프트(prompts/list · prompts/get)로 내보내는 `mcp_prompts(토큰)` |
+| 0017 | `name_worklog` | 표기 WORKLOG 통일(프로젝트 이름 · 프롬프트 · 컨텍스트 팩 머리글) |
+| 0018 | `todo_start_date` | 할 일 시작일 · 기간 검사, `upsert_todo` 인자 추가, 홈 집계 `calendar.ranges` |
+| 0019 | `calendar_all_todos` | 기한만 있는 할 일도 달력에(하루짜리 줄) |
+| 0020 | `scraps` | `scraps` + Storage 버킷 `scraps`(비공개 · 50MB · 소유자 정책) + RPC 3개, links 종류에 diary · scrap |
 | 0015 | `diary` | `diary_entries` + `list_diary` · `upsert_diary`(본문 링크 함께) · `delete_diary`, `links.from_type` 에 `diary` 추가 |
 
 ## 10. 결정 로그
@@ -56,3 +60,5 @@
   `assert_owner()` 와 검증 로직을 그대로 재사용한다. 쓰기는 preview 가 내용을 `mcp_pending` 에 보관하고 commit 은 보관한 내용만 저장해,
   사용자에게 보여 준 것과 저장되는 것이 어긋날 수 없다. 실패한 commit 은 트랜잭션째 되돌아가 확인 번호도 살아 있다. 삭제 도구는 두지 않았다.
 - 2026-10-22 (0015) 개인 일기. 나중에 일기 · 작업을 함께 엮는 확장을 위해 코드(D-날짜)와 본문 링크를 처음부터 남긴다. 개인 글이라 컨텍스트 팩 · MCP 에는 내지 않았다.
+- 2026-10-22 (0020) 스크랩. 파일 본체는 Storage, 메타데이터는 표. 표는 다른 표처럼 RPC 로만, Storage 는 로그인(=소유자) 정책으로만 연다. 삭제 RPC 는 경로를 돌려주고 화면이 Storage API 로 본체를 지운다(SQL 로 storage.objects 를 지우면 파일이 남는다).
+

@@ -4,7 +4,8 @@
       "home": "홈",
       "logs": "작업 기록",
       "plans": "계획 · 목표",
-      "me": "개인"
+      "me": "개인",
+      "scraps": "스크랩"
     },
     "shell": {
       "collapse": "메뉴 접기",
@@ -288,6 +289,48 @@
       "saved": "일기를 저장했어요",
       "deleteTitle": "일기를 삭제할까요?",
       "deleteBody": "{code} 일기를 지워요. 되돌릴 수 없어요."
+    },
+    "scraps": {
+      "title": "스크랩",
+      "box": "스크랩",
+      "count": "{count}개 · 최근순",
+      "add": "올리기",
+      "f_all": "전체",
+      "f_image": "이미지",
+      "f_doc": "문서",
+      "f_web": "웹 페이지",
+      "f_link": "링크",
+      "f_etc": "기타",
+      "empty": "아직 스크랩이 없어요. 파일이나 링크를 올려 두면 여기 모여요",
+      "foot1": "파일은 형식 제한 없이 50MB 까지 · 링크도 올릴 수 있어요",
+      "foot2": "메모에 [[L-날짜]] · [[G1]] 처럼 적으면 기록 · 목표와 이어져요",
+      "mode": "올릴 것",
+      "modeFile": "파일",
+      "modeLink": "링크",
+      "dropTitle": "파일을 끌어다 놓거나 눌러서 고르기",
+      "dropHint": "여러 개를 한 번에 · 형식 제한 없음 · 파일당 50MB",
+      "remove": "빼기",
+      "fieldTitle": "제목",
+      "phTitleFile": "비우면 파일 이름",
+      "phTitleLink": "비우면 주소",
+      "fieldUrl": "주소",
+      "fieldNote": "메모",
+      "noteHint": "왜 모아 두는지, 어디에 쓸지. [[코드]] 로 기록 · 목표와 이을 수 있어요",
+      "fieldTags": "태그",
+      "phTags": "쉼표로 구분 · 예: 디자인, 참고",
+      "save": "올리기",
+      "uploadN": "{count}개 올리기",
+      "added": "스크랩했어요",
+      "tooBig": "50MB 를 넘어 뺐어요: {names}",
+      "uploadFailed": "{name} 을 올리지 못했어요",
+      "saved": "저장했어요",
+      "download": "내려받기",
+      "openLink": "링크 열기",
+      "openNew": "새 탭에서 열기",
+      "noPreview": "{ext} 파일은 미리보기가 없어요. 내려받아 열어 주세요",
+      "addedAt": "{date} 에 올림",
+      "deleteTitle": "스크랩을 삭제할까요?",
+      "deleteBody": "{code} 과 저장된 파일이 지워져요. 되돌릴 수 없어요."
     }
   }
 }

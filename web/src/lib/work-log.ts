@@ -24,7 +24,7 @@ export type WorkItem = {
 export type WorkHour = { hour: number; value: number; label: string };
 export type WorkRange = { start: number; end: number; hours: number; label: string };
 export type WorkTodo = { seq: number; text: string; needsDecision: boolean; done: boolean; planItemCode: string | null };
-export type CodeLink = { toType: "project" | "goal" | "plan" | "plan_item" | "log"; toCode: string; kind: "ref" | "wikilink"; context: string };
+export type CodeLink = { toType: "project" | "goal" | "plan" | "plan_item" | "log" | "diary" | "scrap"; toCode: string; kind: "ref" | "wikilink"; context: string };
 
 export type ParsedWorkLog = {
   meta: { kind: string; date: string; author: string; role: string; summary: string };
@@ -49,6 +49,8 @@ export const RE_GOAL = /^G\d+$/;
 export const RE_PLAN_ITEM = /^G\d+-\d+$/;
 export const RE_LOG = /^L-\d{4}-\d{2}-\d{2}(?:-\d+)?$/;
 export const RE_PLAN = /^PL-\d{4}-(?:W\d{2}|\d{2})$/;
+export const RE_DIARY = /^D-\d{4}-\d{2}-\d{2}(?:-\d+)?$/;
+export const RE_SCRAP = /^S-\d+$/;
 
 /** 붙여넣기 · 파일에서 섞여 오는 것을 벗긴다: 코드블록 울타리, 머리말 앞 잡문, 굵은 메타, 전각 콜론, "##제목" */
 export function normalizeWorkLogSource(raw: string): string {
@@ -68,6 +70,8 @@ export function codeType(code: string): CodeLink["toType"] | null {
   if (RE_GOAL.test(code)) return "goal";
   if (RE_PLAN.test(code)) return "plan";
   if (RE_LOG.test(code)) return "log";
+  if (RE_DIARY.test(code)) return "diary";
+  if (RE_SCRAP.test(code)) return "scrap";
   return null;
 }
 
