@@ -123,7 +123,7 @@
       "dueOver": "{days}일 지남",
       "todoStart": "시작일",
       "todoStartHint": "선택. 정하면 달력에 기간 줄로 보여요",
-      "tipRanges": "기간 할 일 {count}건"
+      "tipRanges": "할 일 {count}건"
     },
     "logs": {
       "title": "작업 기록",

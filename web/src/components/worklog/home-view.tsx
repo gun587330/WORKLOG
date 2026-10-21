@@ -126,7 +126,7 @@ function Kpi({ label, value, unit, hint, children }: { label: string; value: str
 }
 
 /* ── 달력 ──
- * 기간 할 일(시작일 ~ 기한)은 애플 캘린더처럼 여러 날을 잇는 줄로 그린다. 주(행)마다 겹치는 기간에 줄 번호(lane)를 나눠 주고,
+ * 할 일(기한 있는 것 전부)은 애플 캘린더처럼 줄로 그린다. 시작일 ~ 기한이면 여러 날을 잇고, 기한만 있으면 그날 하루짜리 줄이다. 주(행)마다 겹치는 기간에 줄 번호(lane)를 나눠 주고,
  * 각 칸은 자기 주의 줄 수만큼 자리를 먼저 깐 뒤(빈 줄은 같은 높이의 빈칸) 계획 · 기록 항목을 그 아래에 둔다.
  * 그래서 같은 기간의 조각들이 가로로 한 줄에 맞물린다. 제목은 시작일과 주의 첫 칸(월요일)에만 쓴다. */
 type Ev = { kind: "plan" | "log" | "range"; text: string; id?: string };
@@ -171,7 +171,10 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
     const cellLanes = new Map<string, (Seg | null)[]>();
     const rangeByDate = new Map<string, Ev[]>();
     if (!cal) return { cellLanes, rangeByDate };
-    const ranges = (cal.ranges ?? []).slice().sort((a, b) => a.start.localeCompare(b.start) || b.end.localeCompare(a.end));
+    // 할 일 = 기한 있는 할 일 전부(시작일 없으면 기한 하루짜리, 0019). 계획 항목과 이어진 할 일은 계획 항목으로 이미 그리므로 뺀다
+    const plannedCodes = new Set((cal.planned ?? []).map((p) => p.code));
+    const ranges = (cal.ranges ?? []).filter((r) => !(r.plan_item_code && plannedCodes.has(r.plan_item_code)))
+      .slice().sort((a, b) => a.start.localeCompare(b.start) || b.end.localeCompare(a.end));
     for (let w = 0; w < 6; w++) {
       const days = cells.slice(w * 7, w * 7 + 7);
       if (!days.length) continue;
@@ -192,7 +195,7 @@ function Calendar({ today, name }: { today: string; name: (slug: string) => stri
           const text = `${r.plan_item_code ? r.plan_item_code + " " : ""}${r.text}`;
           const span = days.filter((x) => x >= d && x <= r.end).length;   // 이 칸부터 이 주 안에서 이어지는 칸 수(제목이 그만큼 뻗는다)
           slots[lane] = { id: r.id, text, done: r.done, start: d === r.start, end: d === r.end, label: d === r.start || d === days[0], span };
-          (rangeByDate.get(d) ?? rangeByDate.set(d, []).get(d)!).push({ kind: "range", text: `${text} (${fmtMD(r.start)} ~ ${fmtMD(r.end)})` });
+          (rangeByDate.get(d) ?? rangeByDate.set(d, []).get(d)!).push({ kind: "range", text: r.start === r.end ? text : `${text} (${fmtMD(r.start)} ~ ${fmtMD(r.end)})` });
         }
         cellLanes.set(d, slots);
       }
