@@ -1,0 +1,21 @@
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# node
+node_modules/
+
+# supabase local
+supabase/.temp/
+supabase/.branches/
+
+# next
+web/.next/
+web/.next-check/
+web/out/
+web/tsconfig.tsbuildinfo
+web/next-env.d.ts
+
+# os
+.DS_Store
