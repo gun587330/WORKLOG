@@ -3,9 +3,10 @@
 /**
  * 작업 기록 목록 (명세: app/[locale]/(app)/logs/logs-SPEC.md). 세로 100%.
  * 위 = 제목 + 프로젝트 필터 칩 · 프롬프트 박스(고정) · 아래 = 기록 박스(나머지 높이): 머리 [기록 N건 · 최근순 | 새 기록 올리기],
- * 한 줄 가로 카드(회색 면 · 테두리 없음 · 드래그), 푸터 안내. 카드 = 날짜 · 요약 · 프로젝트 칩 · 작업/완료/투입 · 호버 삭제 아이콘.
+ * 한 줄 가로 카드(회색 면 · 테두리 없음 · 드래그), 푸터 안내. 카드는 오래된 것이 왼쪽, 새 기록이 오른쪽 끝에 쌓이고
+ * 처음 열면 오른쪽 끝(최신)이 보인다(2026-10-22 지시). 카드 = 날짜 · 요약 · 프로젝트 칩 · 작업/완료/투입 · 호버 삭제 아이콘.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -40,7 +41,12 @@ export function LogsView() {
     for (const r of rows) for (const sl of r.project_slugs ?? []) m.set(sl, (m.get(sl) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [rows]);
-  const filtered = useMemo(() => rows.filter((r) => !project || (r.project_slugs ?? []).includes(project)), [rows, project]);
+  // 서버는 최신순으로 준다. 화면은 오래된 것 → 새것(왼쪽 → 오른쪽)으로 뒤집어 새 기록이 오른쪽에 쌓이게 한다
+  const filtered = useMemo(() => rows.filter((r) => !project || (r.project_slugs ?? []).includes(project)).slice().reverse(), [rows, project]);
+  useEffect(() => {
+    const el = grid.ref.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, [filtered.length, project, grid.ref]);
 
   return (
     <div className={s.page}>

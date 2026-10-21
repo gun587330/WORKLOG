@@ -19,7 +19,7 @@ import type { HomeStats } from "@/lib/api/worklog";
 import { formatHours, pad2 } from "@/lib/work-log";
 import { addDays, addMonths, daysInMonth, fmtKDate, fmtMD, fmtMonth, fmtPeriod, logCodeToMD, parseISO, sameMonth, todayISO } from "@/lib/format";
 import { KpiChart } from "./charts";
-import { UploadLogModal } from "./upload-log-modal";
+import { HomeLinks } from "./home-links";
 import { TodoFormModal, type TodoFormValue } from "./todo-form-modal";
 import s from "./worklog.module.css";
 
@@ -33,7 +33,6 @@ export function HomeView() {
   useEffect(() => setToday(todayISO()), []);
   const stats = useHomeStats(today);
   const names = useProjectNames();
-  const [uploadOpen, setUploadOpen] = useState(false);
   const d = stats.data;
 
   /* KPI 값 */
@@ -50,7 +49,7 @@ export function HomeView() {
 
   return (
     <div className={s.page}>
-      <PageHeader title={today ? fmtKDate(today) : ""} actions={<Button size="sm" onClick={() => setUploadOpen(true)}>{t("newRecord")}</Button>} />
+      <PageHeader title={today ? fmtKDate(today) : ""} actions={<HomeLinks stats={d} today={today} />} />
       {stats.isError && <p className={s.errorNote}>{tc("loadFailed")}</p>}
       <div className={s.home}>
         <div className={s.kpis}>
@@ -109,7 +108,6 @@ export function HomeView() {
           <div className={s.cfoot}><span><b>{t("rateFoot")}</b> {t("rateFootDesc")}</span></div>
         </section>
       </div>
-      <UploadLogModal open={uploadOpen} onClose={() => setUploadOpen(false)} onPublished={(id) => { setUploadOpen(false); router.push(`/logs/${id}`); }} />
     </div>
   );
 }
