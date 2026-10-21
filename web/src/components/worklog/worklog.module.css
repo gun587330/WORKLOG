@@ -37,12 +37,16 @@
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
+  white-space: nowrap;           /* 제목은 줄바꿈하지 않는다(「진행 중인 계획」이 두 줄로 꺾이던 것) */
 }
 .secLab small {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--ink-2);
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;       /* 좁으면 부제가 먼저 줄어든다 */
 }
 .row {
   display: flex;
