@@ -41,3 +41,16 @@
   font-size: 0.875rem;
   color: var(--ink-2);
 }
+
+/* 백엔드 미연결 안내. 환경 변수가 없을 때만 보인다 */
+.notice {
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--caution) 8%, var(--paper));
+  border: 1px solid color-mix(in srgb, var(--caution) 25%, transparent);
+  color: var(--caution);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+

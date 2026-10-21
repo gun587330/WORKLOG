@@ -28,7 +28,8 @@
       "submit": "로그인",
       "failed": "이메일 또는 비밀번호를 확인해 주세요.",
       "unexpected": "로그인하지 못했어요. 잠시 후 다시 시도해 주세요.",
-      "failedTitle": "로그인하지 못했어요"
+      "failedTitle": "로그인하지 못했어요",
+      "noBackend": "아직 데이터베이스가 연결되지 않았어요. 배포 설정의 환경 변수(NEXT_PUBLIC_SUPABASE_URL · NEXT_PUBLIC_SUPABASE_ANON_KEY)를 확인해 주세요."
     }
   },
   "common": {

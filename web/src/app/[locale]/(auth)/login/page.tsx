@@ -25,6 +25,9 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
         <p className={s.brand}><i aria-hidden="true" />WORK LOG</p>
         <h1 className={s.title}>{t("title")}</h1>
         <p className={s.lead}>{t("lead")}</p>
+        {(!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) && (
+          <p className={s.notice} role="alert">{t("noBackend")}</p>
+        )}
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>

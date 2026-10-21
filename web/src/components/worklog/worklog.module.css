@@ -428,7 +428,7 @@
   align-items: flex-start;
   font-size: 0.8125rem;
   line-height: 1.5;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.5rem;        /* 좌우 0.5rem 은 ul 의 음수 여백과 상쇄. 모든 행이 같은 폭(계획 항목 행만 좁던 것 수정, 2026-10-22) */
   border-bottom: 1px solid var(--bg-soft);
 }
 .todo li:last-child { border-bottom: 0; }
@@ -487,13 +487,9 @@
 }
 .todoClickable {
   cursor: pointer;
-  margin: 0;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
   border-radius: 0.625rem;
   transition: background 0.12s;
 }
-.todo li:not(.todoClickable) { padding-left: 0.5rem; padding-right: 0.5rem; }
 .todoClickable:hover { background: var(--bg-soft); }
 .footerLeft { margin-right: auto; }
 

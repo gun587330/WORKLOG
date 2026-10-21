@@ -9,9 +9,10 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/common/app-shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // env 미설정(백엔드 미연결)은 UI 개발 모드 — 운영에서는 env 없이는 데이터를 못 읽으므로 열리지 않는다
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return <AppShell account={null}>{children}</AppShell>;
+  // env 미설정(백엔드 미연결)이면 앱 화면을 열지 않고 로그인으로 보낸다. 빈 셸에 "불러오지 못했어요" 만 뜨는 화면을 운영에서
+  // 보이지 않기 위함(2026-10-22, Vercel 첫 배포가 환경 변수 없이 홈을 열었다). 로그인 화면이 연결 전 상태를 안내한다.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
+    return redirect({ href: "/login", locale: await getLocale() });
   }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
