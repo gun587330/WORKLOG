@@ -34,7 +34,7 @@ export type WorkLogDetail = {
   log: WorkLog;
   items: { id: string; seq: number; code: string; time_text: string | null; hour_end: number | null; title: string; project_slug: string; project_name: string; goal_code: string | null; goal_title: string | null; status: string; tags: string[]; body_md: string }[];
   hours: { hour: number; value: number; label: string }[];
-  todos: { id: string; text: string; needs_decision: boolean; done: boolean; plan_item_code: string | null }[];
+  todos: { id: string; text: string; needs_decision: boolean; done: boolean; plan_item_code: string | null; project_slug: string | null; goal_code: string | null; due_date: string | null; note: string | null; log_id: string | null }[];
   completions: { code: string; title: string; goal_code: string }[];
 };
 /** home_stats 의 jsonb 모양 (0007) */

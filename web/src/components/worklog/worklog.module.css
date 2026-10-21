@@ -844,11 +844,20 @@
 
 /* ── 기록 상세 ── */
 .detailPage {
-  min-height: calc(100dvh - 1rem);
-  padding: 0.75rem 1rem 1rem;
+  height: calc(100dvh - 1rem);
+  padding: 0.75rem 1rem 0;
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
+}
+/* 머리(꺾쇠 · 코드)는 고정, 이 영역만 스크롤 (2026-10-21 지시). 좌우 sticky 칸은 이 컨테이너 기준으로 붙는다 */
+.detailScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 .detail {
   display: grid;
@@ -858,11 +867,11 @@
 }
 .sideCol {
   position: sticky;
-  top: 0.5rem;
+  top: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: calc(100dvh - 1rem);
+  max-height: calc(100dvh - 5rem);
   overflow-y: auto;
 }
 .sideCol .secLab { margin-bottom: 0.75rem; }
@@ -1371,6 +1380,7 @@
   .kpis { grid-template-columns: 1fr; }
   .calGrid { min-height: 22rem; }
   .hgrid { grid-auto-columns: 85vw; }
+  .detailPage { height: auto; }
   .detail { grid-template-columns: 1fr; }
   .sideCol { position: static; max-height: none; }
   .tocWrap { display: none; }
