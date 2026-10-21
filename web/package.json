@@ -10,7 +10,10 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check:glass": "node scripts/check-glass-buttons.mjs",
-    "build:check": "NEXT_DIST_DIR=.next-check next build"
+    "build:check": "NEXT_DIST_DIR=.next-check next build",
+    "gen:vocab": "node scripts/gen-vocab.mjs",
+    "predev": "node scripts/gen-vocab.mjs",
+    "prebuild": "node scripts/gen-vocab.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",

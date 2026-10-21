@@ -8,7 +8,8 @@
     "db:push": "supabase db push",
     "db:diff": "supabase db diff",
     "gen:types": "supabase gen types typescript --linked > /tmp/worklog-db.ts && mv /tmp/worklog-db.ts web/src/types/database.ts",
-    "owner:create": "node scripts/create-owner.mjs"
+    "owner:create": "node scripts/create-owner.mjs",
+    "mcp:token": "node scripts/create-mcp-token.mjs"
   },
   "directories": {
     "doc": "docs"

@@ -31,3 +31,15 @@ Vercel 프로젝트의 Root Directory 를 `web` 으로 두고 환경 변수에 `
 
 - 루트 `CLAUDE.md`(백엔드) · `web/CLAUDE.md`(프론트)가 작업 규칙의 단일 원본이다. 작업 전에 읽는다.
 - 데이터의 뜻은 `docs/VOCAB.md` 가 정한다. 프롬프트 · 화면 · MCP 가 같은 글을 쓴다.
+
+## 클로드 연결 (MCP)
+
+사이트의 `/api/mcp` 가 MCP 서버다. 클로드가 WORK LOG 를 읽고(계획 · 목표 · 기록 · 할 일 · 컨텍스트 팩), 사용자 승인을 받아 쓴다(VOCAB §7).
+
+1. 토큰 발급: 루트에서 `npm run mcp:token -- --label claude-code`. 토큰은 한 번만 보인다.
+2. 연결
+   - Claude Code: `claude mcp add --transport http worklog https://worklog-phi-two.vercel.app/api/mcp --header "Authorization: Bearer <토큰>"` → `/mcp` 로 연결 확인.
+   - claude.ai: 설정 > 커넥터 > 사용자 지정 커넥터 추가, URL 에 `https://worklog-phi-two.vercel.app/api/mcp/<토큰>`.
+3. 클로드 앱의 도구 승인 설정에서 쓰기 도구(upload_log · upload_plan · create_project · save_goal · save_todo · set_todo_done · set_plan_item_status)는 "항상 묻기".
+4. 폐기: `npm run mcp:token -- --revoke --label claude-code` 또는 `--revoke-all`.
+

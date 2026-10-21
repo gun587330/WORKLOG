@@ -32,6 +32,10 @@
 | 0008 | `prompts_project_confirm` | 프롬프트 2종 본문 개정: 프로젝트(분류)는 사용자 확인 뒤에만 적는다(루트 CLAUDE.md 절대규칙 10) |
 | 0009 | `home_stats_week_projects` | 홈 「이번 주 투입」 프로젝트별 합이 총투입을 넘던 중복 합산 수정 |
 | 0010 | `todos_standalone` | `log_todos.log_id` 선택화 + `project_id` · `goal_id` · `due_date` · `note` + `upsert_todo` · `delete_todo`, `home_stats` · `context_pack` 재정의 |
+| 0011 | `get_work_log_todos` | 기록 상세 조회가 할 일의 프로젝트 · 목표 · 기한 · 메모까지 낸다 |
+| 0012 | `mcp` | `private.mcp_tokens` · `private.mcp_pending` · `public.mcp_audit` + `mcp_read` · `mcp_prepare` · `mcp_commit` · `issue_mcp_token` · `revoke_mcp_tokens` · `list_mcp_audit` |
+| 0013 | `mcp_goal_by_code` | MCP save_goal 이 목표를 코드(G12)로 가리킨다 |
+| 0014 | `mcp_confirm_short_kst` | 한 글자 승인("네") 허용, 컨텍스트 팩 날짜를 한국 시간으로 |
 
 ## 10. 결정 로그
 
@@ -45,4 +49,8 @@
 | `links` 를 1차부터 저장 | 3차 UI 때 과거 기록을 다시 파싱하지 않기 위해. 저장은 싸다 |
 
 - 2026-10-21 (0010) 「앞으로 할 일」을 화면에서 직접 추가 · 수정 · 삭제하게 했다. 새 표를 만들지 않고 `log_todos.log_id` 를 선택으로 풀어 한 표에 둔 이유: 홈 목록 · 컨텍스트 팩 · 체크 RPC 가 이미 이 표를 보고 있어서, 표를 나누면 세 곳이 두 표를 합쳐야 한다. 기록에서 온 할 일을 폼으로 고쳐도 `raw_md` 는 건드리지 않는다(절대규칙 8).
+- 2026-10-22 (0012~0014) 클로드(MCP)가 읽고 쓰는 창구. 서버(Vercel)에 service_role 을 두지 않으려고 MCP 함수 세 개만 anon 에 열고, 첫 줄에서
+  토큰 해시를 검사한 뒤 토큰 주인을 이번 트랜잭션의 로그인 사용자로 세운다(`set_config('request.jwt.claim.sub')`). 그래서 기존 RPC 의
+  `assert_owner()` 와 검증 로직을 그대로 재사용한다. 쓰기는 preview 가 내용을 `mcp_pending` 에 보관하고 commit 은 보관한 내용만 저장해,
+  사용자에게 보여 준 것과 저장되는 것이 어긋날 수 없다. 실패한 commit 은 트랜잭션째 되돌아가 확인 번호도 살아 있다. 삭제 도구는 두지 않았다.
 

@@ -232,6 +232,42 @@ export type Database = {
           },
         ]
       }
+      mcp_audit: {
+        Row: {
+          confirmations: Json
+          created_at: string
+          id: string
+          payload: Json
+          result: Json | null
+          token_label: string
+          tool: string
+          updated_at: string
+          user_confirmation: string
+        }
+        Insert: {
+          confirmations?: Json
+          created_at?: string
+          id?: string
+          payload: Json
+          result?: Json | null
+          token_label: string
+          tool: string
+          updated_at?: string
+          user_confirmation: string
+        }
+        Update: {
+          confirmations?: Json
+          created_at?: string
+          id?: string
+          payload?: Json
+          result?: Json | null
+          token_label?: string
+          tool?: string
+          updated_at?: string
+          user_confirmation?: string
+        }
+        Relationships: []
+      }
       plan_items: {
         Row: {
           code: string
@@ -628,6 +664,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      issue_mcp_token: {
+        Args: { p_label: string; p_owner_email: string; p_token_hash: string }
+        Returns: Json
+      }
       list_goals: {
         Args: { p_status?: string }
         Returns: {
@@ -646,6 +686,26 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      list_mcp_audit: {
+        Args: { p_limit?: number }
+        Returns: {
+          confirmations: Json
+          created_at: string
+          id: string
+          payload: Json
+          result: Json | null
+          token_label: string
+          tool: string
+          updated_at: string
+          user_confirmation: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mcp_audit"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       list_plans: {
         Args: never
@@ -722,6 +782,25 @@ export type Database = {
           task_count: number
         }[]
       }
+      mcp_commit: {
+        Args: {
+          p_code: string
+          p_confirmations?: Json
+          p_token: string
+          p_tool: string
+          p_user_confirmation: string
+        }
+        Returns: Json
+      }
+      mcp_prepare: {
+        Args: { p_payload: Json; p_token: string; p_tool: string }
+        Returns: Json
+      }
+      mcp_read: {
+        Args: { p_args?: Json; p_token: string; p_tool: string }
+        Returns: Json
+      }
+      revoke_mcp_tokens: { Args: { p_label?: string }; Returns: number }
       set_log_todo_done: {
         Args: { p_done: boolean; p_id: string }
         Returns: {

@@ -26,6 +26,7 @@ export const config = {
   // 정적 파일·이미지·문서·favicon 은 제외하고 모든 경로에 적용
   // (pdf·ppt·pptx = 브랜드 소개서 정적 서빙 — 빠지면 로케일 rewrite 를 타서 404, 2026-07-27)
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|ppt|pptx)$).*)",
+    // api/ = MCP 서버(/api/mcp). 로케일 rewrite · 로그인 리다이렉트를 타면 안 된다(토큰으로 자체 인증)
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|ppt|pptx)$).*)",
   ],
 };
