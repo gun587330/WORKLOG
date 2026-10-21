@@ -9,5 +9,12 @@
     "db:diff": "supabase db diff",
     "gen:types": "supabase gen types typescript --linked > /tmp/worklog-db.ts && mv /tmp/worklog-db.ts web/src/types/database.ts",
     "owner:create": "node scripts/create-owner.mjs"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0"
   }
 }
