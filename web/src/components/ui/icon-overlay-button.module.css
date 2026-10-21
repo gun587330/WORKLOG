@@ -1,0 +1,65 @@
+/* 이미지·카드 위에 얹는 **아이콘 전용 액션 버튼** — 단일 원본.
+ *
+ * 2026-08-08 승격: 같은 스펙이 `brand/product-card.module.css`(.iconBtn/.iconDanger)와
+ * `brand/profile-summary-card.module.css`(.editBtn/.deleteBtn)에 이미 복제돼 있었고,
+ * 설정 화면의 로고 업로더가 **세 번째 사용처**가 되면서 승격했다
+ * (web/CLAUDE.md 구조 관례: "두 번째 사용처가 보이는 UI는 컴포넌트로 추출").
+ *
+ * 문법: 반투명 paper 판 + 역할색 보더(연필=액센트, 휴지통=위험색). 이미지 위에 얹혀도
+ * 아이콘이 읽히도록 배경을 깔고, 누름 피드백은 제품 전체와 같은 scale(0.94).
+ * ⚠️ 여기는 **모양만** 정의한다 — 위치(absolute top/right)는 소비처가 정한다.
+ *    카드는 hover 로 드러내고 폼은 상시 노출하는 등 노출 규칙이 서로 다르기 때문이다.
+ */
+.iconOverlayBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.iconOverlayBtn:hover {
+  color: var(--on-accent);
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.iconOverlayBtn:active {
+  transform: scale(0.94);
+}
+
+.iconOverlayBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iconOverlayBtn:disabled:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+}
+
+/* 파괴적 액션 — 판정 '불가' 색을 공유한다 */
+.iconOverlayDanger {
+  color: var(--block);
+  border-color: color-mix(in srgb, var(--block) 50%, transparent);
+}
+
+.iconOverlayDanger:hover {
+  color: #fff;
+  border-color: var(--block);
+  background: var(--block);
+}
+
+.iconOverlayDanger:disabled:hover {
+  color: var(--block);
+  border-color: color-mix(in srgb, var(--block) 50%, transparent);
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+}

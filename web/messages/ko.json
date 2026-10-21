@@ -1,0 +1,23 @@
+{
+  "app": {
+    "nav": { "home": "홈", "logs": "작업 기록", "plans": "계획 · 목표" },
+    "shell": { "collapse": "메뉴 접기", "expand": "메뉴 펼치기", "logout": "로그아웃", "accountFallback": "내 계정", "navAria": "앱 메뉴" }
+  },
+  "auth": {
+    "field": { "show": "비밀번호 표시", "hide": "비밀번호 숨기기" },
+    "login": {
+      "metaTitle": "로그인",
+      "title": "WORK LOG",
+      "lead": "오늘 한 일을 정리하고 내일을 계획해요.",
+      "email": "이메일",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호 입력",
+      "submit": "로그인",
+      "failed": "이메일 또는 비밀번호를 확인해 주세요.",
+      "unexpected": "로그인하지 못했어요. 잠시 후 다시 시도해 주세요."
+    }
+  },
+  "common": {
+    "errorPage": { "title": "화면을 불러오지 못했어요", "desc": "잠시 연결이 끊겼거나 새 버전이 배포됐을 수 있어요.\n새로고침하면 대부분 해결돼요.", "reload": "새로고침" }
+  }
+}

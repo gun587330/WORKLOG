@@ -1,0 +1,36 @@
+{
+  "name": "worklog-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WORK LOG 프론트엔드 — Next.js(App Router) + Supabase + next-intl. anserx-code/web 의 작업 공유를 옮긴 것",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check:glass": "node scripts/check-glass-buttons.mjs",
+    "build:check": "NEXT_DIST_DIR=.next-check next build"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.47.10",
+    "@tanstack/react-query": "^5.64.1",
+    "lucide-react": "^0.471.1",
+    "next": "^15.1.6",
+    "next-intl": "^4.13.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.3"
+  }
+}

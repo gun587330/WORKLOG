@@ -1,0 +1,54 @@
+.track {
+  display: inline-flex;
+  gap: 0.1875rem;
+  padding: 0.1875rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-radius: calc(var(--radius) - 0.1875rem);
+  cursor: pointer;
+  user-select: none;
+  transition: 0.15s ease;
+}
+.item:active {
+  transform: scale(0.98);
+}
+.item:focus-within {
+  outline: 0.125rem solid var(--accent);
+  outline-offset: 1px;
+}
+
+.on {
+  color: var(--ink);
+  font-weight: 700;
+  background: var(--paper);
+  box-shadow: 0 1px 0.25rem rgba(22, 21, 28, 0.08);
+}
+
+/* 시각적으로 숨긴 라디오 — 키보드·스크린리더 접근성 유지 */
+.radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sm .item {
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}

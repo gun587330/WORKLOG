@@ -1,0 +1,101 @@
+/* 빈 상태의 **유일한** 얼굴 (2026-09-04 단일화 — empty-state.tsx 주석 참고).
+ * 변형 클래스를 여기에 추가하지 말 것. 소비처가 고를 수 있는 것은 문구·아이콘·CTA 뿐이다. */
+
+/* 래퍼 — 부모의 남는 영역을 그대로 받는다. `flex: 1 + min-height: 0` 인 이유:
+   대부분의 부모가 flex 컬럼이고, 그 안에 헤더 등 형제가 있을 때 `min-height: 100%` 로 두면
+   형제 높이만큼 넘쳐 스크롤이 생긴다(구 `.fill` 이 이 값을 쓰던 이유 그대로).
+
+   ⚠️ **클래스를 겹쳐 쓴다(`.wrap.wrap`)** — 2026-09-04, 메일함 빈 상태가 세로로 안 차던 버그.
+   스크롤 컨테이너들이 자식 늘어남을 막으려고 `.listBody > * { flex: none }` 같은 **포괄 규칙**을
+   갖고 있는데, 그게 (0,1,0) 이라 단일 클래스 `.wrap` 과 특정도가 같아 번들 순서로 승자가
+   갈린다. 예전엔 `.wrap:has(.bare)`(0,2,0)가 우연히 이겨서 가려져 있었고, 변형 prop 을
+   없애면서 그 우연이 사라져 드러났다. 크기는 이제 **컴포넌트가 소유**하므로(DESIGN.md §4-1)
+   소비처의 포괄 규칙에 지지 않는 특정도로 못 박는다. */
+.wrap.wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  /* 낮은 부모(홈 프로젝트 박스 등)에서 내용이 소프트 존 밖으로 삐져나오는 것 차단 —
+     내부는 아래 상대 단위(cqi)와 desc 줄 수 상한이 먼저 줄인다 (2026-09-04) */
+  overflow: hidden;
+}
+
+/* 박스 = **빈 자리 소프트 존**. 유리 표면이 아니다 — 유리는 면(카드·패널)의 언어이고
+   빈 자리는 "아직 아무것도 없는 면"이라 뜻이 다르다. 색은 theme.css `--surface-empty`
+   단일 원본이고 프로필 요약 카드의 커버 미업로드 자리와 같은 값이다 (DESIGN.md §4).
+   크기는 **항상 부모 100%** — 여기서도, 소비처에서도 고르지 않는다. */
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface-empty);
+  border-radius: calc(var(--radius-card) - 0.5rem);
+  /* 패딩은 폭 비례(% = 컨테이너 인라인 크기 기준). 좌우가 좁아질수록 여백도 줄어
+     내용이 쓸 폭이 남는다. 상·하한은 rem 으로 묶는다. */
+  padding: clamp(0.875rem, 5%, 1.75rem) clamp(0.75rem, 4%, 1.5rem);
+  /* 아래 자식들이 **자기 폭**을 기준으로 줄어들게 하는 기준면.
+     inline-size 만 잡는다 — `size` 는 높이까지 컨테이너가 정하게 만들어, 높이가 불확정한
+     부모 아래에서 이 박스가 0 높이로 접힌다. */
+  container-type: inline-size;
+}
+
+/* ── 내부 치수는 전부 폭 비례 (2026-09-04) ─────────────────────────────────────
+   같은 컴포넌트가 폭 300px(홈 위젯 컬럼)과 1000px(제품 목록 박스) 양쪽에 놓인다.
+   고정 rem 이면 좁은 쪽에서 내용이 박스를 넘고 넓은 쪽에서는 허전하다.
+   `cqi`(컨테이너 폭 1%)로 재고 상한은 원래 값에 묶어 넓어져도 그보다 커지지 않게 한다. */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2rem, 13cqi, 2.875rem);
+  height: clamp(2rem, 13cqi, 2.875rem);
+  border-radius: clamp(0.5rem, 4cqi, 0.875rem);
+  margin-bottom: clamp(0.5rem, 3cqi, 0.875rem);
+  background: var(--accent-tint);
+  color: var(--accent);
+  flex: none;
+}
+
+.icon svg {
+  width: clamp(1rem, 6.2cqi, 1.375rem);
+  height: clamp(1rem, 6.2cqi, 1.375rem);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(0.8125rem, 3.8cqi, 0.9688rem);
+  font-weight: 700;
+  /* 좁은 폭에서 제목이 잘리지 않게 — 어절 단위로 접힌다 */
+  word-break: keep-all;
+  text-wrap: pretty;
+  max-width: 100%;
+}
+
+.desc {
+  /* i18n 문자열의 \n 을 줄바꿈으로 — 준비중 안내처럼 두 문장을 줄 나눠 보여줄 때
+     (2026-08-09). keep-all: 한국어가 단어 중간에서 꺾이지 않게 — 어절 단위로 줄바꿈 */
+  white-space: pre-line;
+  word-break: keep-all;
+  margin: clamp(0.25rem, 1.5cqi, 0.375rem) 0 0;
+  font-size: clamp(0.75rem, 3.2cqi, 0.8438rem);
+  color: var(--ink-2);
+  /* 36ch 는 넓은 박스에서 줄 길이를 잡는 상한일 뿐 — 좁은 박스에서는 100% 가 이겨야
+     글자가 박스 밖으로 나가지 않는다 */
+  max-width: min(36ch, 100%);
+  text-wrap: pretty;
+  /* 낮은 박스 가드 — 설명은 세 줄까지만 (좁은 컬럼에서 여러 줄로 불어나 세로를 밀어내던
+     깨짐 방지, 2026-09-04). pre-line 줄바꿈과 함께 동작한다 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.action { margin-top: clamp(0.5rem, 3cqi, 1rem); }

@@ -1,0 +1,46 @@
+.field { composes: field from "./field.module.css"; }
+.label { composes: label from "./field.module.css"; }
+.tag { composes: tag from "./field.module.css"; }
+
+/* corner 가 버튼일 수 있어 baseline → center (2026-08-06, LocaleTextField 번역 버튼).
+   기존 corner 사용처는 글자수 카운트뿐이라 시각 차이가 없다. */
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.875rem;
+}
+
+/* 기본 = 라벨 반대쪽 끝 (글자수 카운트) */
+.corner {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+}
+
+/* 변형 = 라벨 텍스트 바로 옆 (인라인 액션 버튼) — field.module.css 와 같은 규약 */
+.cornerInline {
+  margin-left: 0;
+}
+.labelHint { composes: labelHint from "./field.module.css"; }
+
+.textarea {
+  composes: input from "./field.module.css";
+}
+/* 특이도를 한 단계 올린다 (2026-08-30). composes 로 가져온 field .input(height 2.875rem, padding 0 상하)과
+   같은 특이도라 **스타일시트 로드 순서**에 따라 .input 이 이기는 경우가 생겼다 — 그러면 textarea 가
+   한 줄 높이로 줄고 위 패딩이 0 이 되어 플레이스홀더가 위·좌로 붙는다. 순서와 무관하게 이 값이 이긴다 */
+.textarea.textarea {
+  height: auto;
+  min-height: 6rem;
+  padding: 0.75rem 0.875rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+}

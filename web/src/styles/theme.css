@@ -1,0 +1,159 @@
+/* =============================================================================
+ * WORK LOG 디자인 토큰 — ANSERX theme.css 에서 옮김 · 바뀐 점: 액센트 보라 → 블랙(안 A, 2026-10-21),
+ * 중립의 보라 기운 → 회색, 달력 색 바 토큰 추가, 사이드바 폭 토큰 추가. 유리 · 판정 트리오 · 반경은 그대로.
+ * 값의 근거는 docs/frontend/DESIGN.md §1.
+ * ========================================================================== */
+:root {
+  /* ── 타이포그래피 ──
+   * Optimistic VF = Meta 자체 유료 폰트라 로드 불가 → 실제로는 Helvetica로 폴백.
+   * 한글은 Helvetica/Arial에 글리프가 없어 Pretendard로 폴백된다. */
+  --font-sans: "Optimistic VF", Helvetica, Arial, "Pretendard", sans-serif;
+  /* 히어로 헤딩 — 뷰포트에 따라 40~4.125rem */
+  --text-heading: clamp(2.5rem, 5.6vw, 4.125rem);
+
+  --radius: 0.875rem;
+  --radius-sm: 0.5625rem;
+  --radius-card: 1.375rem;
+
+  /* ── 글래스모피즘 (카드 기본값) ──
+   * 컬러 배경 위: 뒤가 비쳐 유리 질감이 살아남.
+   * 흰 배경 위: 투과 질감은 안 나지만 테두리·그림자가 형태를 잡아줘 그대로 써도 안 깨짐. */
+  /* iOS 26 Liquid Glass 방식: 흰색은 거의 깔지 않고 "블러가 일을 한다".
+   * ⚠️ 전제 — 뒤에 색이 있어야 유리가 보인다. 흰 배경 위에선 그냥 투명해질 뿐이므로
+   *    유리를 쓰는 섹션은 반드시 컬러 배경(.sectionGlass)을 함께 깐다. */
+  /* 흰 배경 위에서도 유리로 읽히게 하는 건 "굴절"이 아니라 광학 디테일이다:
+   * 엣지 굴절 밴드 + 스페큘러 + 색수차 + 안쪽 그림자. (뒤가 흰색이면 굴절해도 흰색)
+   * 배경색(fill)은 거의 0에 가깝게 — 유리는 채우는 게 아니라 테두리로 존재한다. */
+  /* 뉴트럴(바이올렛으로 미세하게 기운) 반투명 — 흰색이 아니라 "살짝 어두운 유리".
+   * 밝은 배경 위에선 배경보다 어둡고, 어두운 배경 위에선 밝아서 → 배경과 무관하게 항상 보인다.
+   * (iOS·macOS·Windows Acrylic 전부 같은 원리. 흰 유리는 흰 배경에서 사라진다) */
+  --glass-bg: rgba(20, 20, 28, 0.05);
+  --glass-bg-strong: rgba(20, 20, 28, 0.09);    /* 대비가 더 필요한 곳 */
+  /* 블러 스케일 — 2단계로 충분하다. 표면이 클수록 뒤를 더 뭉갠다.
+   * lg = 카드·네브바처럼 넓은 유리판 / sm = FAQ 아이템·카드 안 목업처럼 작은 조각.
+   * ⚠️ **버튼은 이 목록에서 빠졌다** (2026-09-04) — 유리 버튼은 신규 금지다(DESIGN.md §4-1).
+   * ⚠️ 새 값을 하드코딩하지 말 것 — 값이 갈라지면 화면마다 유리 질감이 미묘하게 어긋난다. */
+  --glass-blur: blur(3rem) saturate(220%) brightness(1.12);
+  --glass-blur-sm: blur(1.25rem) saturate(180%);
+  /* plain = 색 보정 없는 순수 블러 — sticky 페이지 헤더처럼 "평소엔 배경과 완전히 동화되고,
+   * 밑으로 지나가는 콘텐츠만 뭉개야 하는" 자리 전용. saturate/brightness가 붙으면
+   * 정지 상태에서도 배경 워시와 색이 어긋나 띠로 보인다 (2026-07-27 헤더 이질감 피드백). */
+  --glass-blur-plain: blur(1.25rem);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+  --glass-shadow:
+    0 1.625rem 4.375rem rgba(60, 40, 100, 0.16),
+    0 0.125rem 0.5rem rgba(60, 40, 100, 0.06);
+  /* 유리 두께의 광학 — 엣지 굴절 밴드(안쪽 0.1875rem)가 핵심. 흰 배경에서도 형태가 살아난다. */
+  /* ⚠️ 넓게 퍼지는 inner glow는 금지 — 카드 내부(텍스트 영역)를 뿌옇게 덮는다.
+   * 광학은 "가장자리에만" 걸려야 하고, 내부는 투명하게 비어 있어야 유리다. */
+  --glass-inset:
+    inset 0 0.0938rem 0.0312rem -0.0312rem rgba(255, 255, 255, 1),      /* 상단 스페큘러 */
+    inset 0 -1px 0.0312rem -0.0312rem rgba(255, 255, 255, 0.6),     /* 하단 반사 */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),               /* 유리 벽 */
+    inset 0 0.125rem 0.3125rem -0.125rem rgba(255, 255, 255, 0.75),         /* 엣지 굴절 밴드(상) */
+    inset 0 -0.125rem 0.3125rem -0.125rem rgba(255, 255, 255, 0.35);        /* 엣지 굴절 밴드(하) */
+
+  /* 랜딩 팔레트 (plain vars — 랜딩 모듈이 참조) */
+  --paper: #ffffff;
+  --sidebar-w: 9.5rem;        /* 좌측 네브바 폭 (app-shell · modal 이 같이 쓴다) */
+  --bg-soft: #f4f4f6;         /* 연회색 면 */
+  --ink: #16151c;            /* near-black 헤딩 */
+  --ink-2: #6b6b75;          /* 그레이 본문 */
+  --line: #e6e6eb;
+  /* 브랜드 액센트 = 블랙 · 다크 그레이 (2026-10-21 확정) */
+  --accent: #1f1d24;         /* primary 블랙 */
+  --accent-2: #000000;       /* hover */
+  --accent-soft: #4a4756;    /* 구 MVP --accent-violet 원본 (배지·그라디언트용) */
+  --accent-tint: #ececf0;
+  --on-accent: #ffffff;
+  /* 빈 자리 소프트 존 — "여기에 아직 아무것도 없다"를 말하는 면의 배경 단일 원본.
+     프로필 카드의 커버 미업로드 자리(profile-summary-card .coverBox)와 공용 빈 상태
+     (common/empty-state 의 soft)가 같은 값을 쓴다. 빈 자리 배경이 화면마다 다르면
+     같은 뜻의 면이 서로 다른 얼굴로 읽힌다 (2026-09-03).
+     var() 참조라 다크에서 재정의된 --accent-soft·--bg-soft 를 자동으로 따라간다. */
+  --surface-empty: color-mix(in srgb, var(--accent-soft) 22%, var(--bg-soft));
+  /* 표·목록의 **헤더 밴드** 배경 단일 원본 (2026-09-06 C0 잔여 정리).
+     "바이어 리스트 헤더와 같은 색"이라는 대표 지시(2026-09-04)로 정해진 값인데 토큰이 없어
+     `#eeebf5` 가 다섯 파일에 복사돼 있었다 — 같은 뜻의 면이 화면마다 갈라지고 다크 팔레트도
+     따라오지 못한다. line 을 종이에 살짝 섞은 파생이라 라이트에서 구 값과 육안 차이가 없고,
+     다크에서는 재정의된 --line·--paper 를 자동으로 따라간다 (--surface-empty 와 같은 방식).
+     소비처: 제품 목록·제품 탐색·바이어 리스트·바이어 시트·규제 분석 헤더. */
+  --surface-band: color-mix(in srgb, var(--line) 85%, var(--paper));
+  /* 구 MVP에서 이어온 보조 */
+  --accent-mint: #34d399;
+  --accent-blue: #2f6bff;
+  /* 홀로그램 그라디언트 (구 MVP --theme-hologram 계보) */
+  --grad-hologram: linear-gradient(135deg, #4a4756 0%, #1f1d24 100%);
+  --grad-hologram-sub: linear-gradient(135deg, #4a4756 0%, #1f1d24 100%);
+  --band-dark: #101117;      /* 다크 밴드/푸터 */
+  --on-dark: #f4f4f6;
+  --on-dark-2: #999aa6;
+
+  /* 판정 트리오 (색의 주인공) */
+  --pass: #0e7c5a;   --caution: #b26a00;   --block: #c4142e;
+  /* 홈 달력 항목 색 바 — 계획된 작업 / 진행한 프로젝트 (DESIGN §1) */
+  --plan-bar: #d99a06;  --done-bar: #4a4756;
+
+  /* shadcn 호환 토큰 (HSL 3요소) — 앱 UI용 */
+  --background: 0 0% 100%;
+  --foreground: 255 12% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 255 12% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 255 12% 10%;
+  --primary: 255 10% 13%;          /* 바이올렛 #7C5CF0 (구 MVP 계보) */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 255 30% 96%;
+  --secondary-foreground: 255 12% 10%;
+  --muted: 255 30% 96%;
+  --muted-foreground: 255 9% 43%;
+  --accent-foreground: 255 12% 10%;
+  --destructive: 349 82% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 255 24% 93%;
+  --input: 255 24% 93%;
+  --ring: 255 10% 13%;
+}
+
+:root[data-theme="dark"] {
+  --paper: #0d0c13;
+  --bg-soft: #16141d;
+  --ink: #f4f3f7;
+  --ink-2: #9d99ab;
+  --line: #25232e;
+  --accent: #e6e6ea;         /* 다크에선 밝은 회색 */
+  --accent-2: #ffffff;
+  --accent-soft: #9a98a6;
+  --accent-tint: #2a2a30;
+  --on-accent: #0d0c13;
+  --accent-mint: #34d399;
+  --accent-blue: #5b87ff;
+  /* 다크에선 유리가 어두워야 자연스럽다 */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(255, 255, 255, 0.09);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 0.875rem 2.75rem rgba(0, 0, 0, 0.45);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --band-dark: #08070c;
+  --on-dark: #f4f3f7;
+  --on-dark-2: #8c8898;
+
+  --background: 255 20% 6%;
+  --foreground: 258 20% 96%;
+  --card: 255 18% 9%;
+  --card-foreground: 258 20% 96%;
+  --popover: 255 18% 9%;
+  --popover-foreground: 258 20% 96%;
+  --primary: 240 7% 91%;    /* #A78BFA */
+  --primary-foreground: 255 20% 6%;
+  --secondary: 255 14% 16%;
+  --secondary-foreground: 258 20% 96%;
+  --muted: 255 14% 16%;
+  --muted-foreground: 255 9% 64%;
+  --accent-foreground: 258 20% 96%;
+  --destructive: 349 90% 62%;
+  --destructive-foreground: 255 20% 6%;
+  --border: 255 14% 19%;
+  --input: 255 14% 21%;
+  --ring: 240 7% 91%;
+}

@@ -1,0 +1,8 @@
+/* 오류 경계 — 빈 상태 컴포넌트를 화면 가운데에 둔다. 크기는 EmptyState 가 소유한다 */
+.wrap {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--bg);
+}

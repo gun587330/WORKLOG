@@ -1,0 +1,232 @@
+/* 앱 셸 — ANSERX app-shell.module.css 에서 옮김 · 바뀐 점: 폭 토큰(--sidebar-w 9.5rem), 접힘 = 완전 숨김,
+ * 콘텐츠 워시 없음(흰 지면 위 연회색 워시는 각 화면 표면이 담당), 미리보기 · 투어 관련 클래스 삭제. */
+
+.shell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--bg-soft);
+  color: var(--ink);
+}
+
+.sidebar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  width: var(--sidebar-w);
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.625rem 0.875rem;
+  background: var(--bg-soft);
+  border-right: 1px solid var(--line);
+}
+
+/* 접힘 — 네브바 전체가 사라진다. 펼침 버튼(.expandBtn)만 남는다 */
+.collapsed .sidebar { display: none; }
+.expandBtn {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 30;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: var(--paper);
+  box-shadow: 0 0.125rem 0.5rem rgba(20, 20, 28, 0.12);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.expandBtn svg { width: 1.0625rem; height: 1.0625rem; }
+.collapsed .contentIn { padding-left: 3.5rem; }
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 0 0.75rem 0.5rem;
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.logo i {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 0.35rem;
+  background: var(--accent);
+  display: inline-block;
+}
+
+.sidebar nav { display: flex; flex-direction: column; gap: 0.375rem; }
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  height: 2.625rem;
+  padding: 0 0.625rem;
+  border-radius: 0.6875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.navItem:hover { background: rgba(20, 20, 28, 0.05); color: var(--ink); }
+.navItem.active { background: var(--accent-tint); color: var(--accent); font-weight: 700; }
+.navItem svg { width: 1.0625rem; height: 1.0625rem; flex: none; }
+
+.spacer { flex: 1; }
+
+.collapseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex: none;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.collapseBtn:hover { background: rgba(20, 20, 28, 0.06); color: var(--ink); }
+.collapseBtn svg { width: 1.0625rem; height: 1.0625rem; }
+
+/* ── 계정 메뉴 (ANSERX 와 동일) ── */
+.account { position: relative; margin-top: 0.125rem; padding-top: 0.625rem; border-top: 1px solid var(--line); }
+.accountBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.5625rem;
+  border: 0;
+  border-radius: 0.6875rem;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.accountBtn:hover { background: rgba(20, 20, 28, 0.06); }
+.avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+  color: var(--on-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.accountName {
+  min-width: 0;
+  font-size: 0.8438rem;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.accountMenu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  padding: 0.375rem;
+  border-radius: 0.875rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: 0 0.75rem 2.25rem rgba(20, 20, 28, 0.14);
+  z-index: 60;
+}
+.menuHead { padding: 0.5625rem 0.75rem 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.3125rem; }
+.menuHead b { display: block; font-size: 0.8438rem; }
+.menuHead small { display: block; color: var(--ink-2); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  width: 100%;
+  padding: 0.5625rem 0.75rem;
+  border: 0;
+  border-radius: 0.5625rem;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8438rem;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.menuItem:hover { background: var(--accent-tint); }
+.menuItem svg { width: 1rem; height: 1rem; color: var(--ink-2); }
+
+/* ── 콘텐츠 ── */
+.content { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+.contentIn { width: 100%; max-width: 96rem; margin: 0 auto; padding: 0.5rem; }
+
+.mobileTop {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.375rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.tabbar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tabbar a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1875rem;
+  padding: 0.5rem 0 0.4375rem;
+  font-size: 0.6562rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.tabbar a.active { color: var(--accent); font-weight: 700; }
+.tabbar a svg { width: 1.3125rem; height: 1.3125rem; }
+
+@media (max-width: 768px) {
+  .sidebar, .expandBtn { display: none; }
+  .mobileTop { display: flex; }
+  .tabbar { display: flex; }
+  .contentIn { padding: 1.25rem 1rem calc(4.75rem + env(safe-area-inset-bottom)); }
+  .collapsed .contentIn { padding-left: 1rem; }
+  .account { border: 0; padding: 0; margin: 0; }
+  .accountMenu { left: auto; right: 0; bottom: auto; top: calc(100% + 0.5rem); min-width: 12.5rem; }
+}

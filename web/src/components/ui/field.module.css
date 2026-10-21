@@ -1,0 +1,153 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+}
+
+/* 라벨 + 보조 슬롯(corner) 한 줄 — textarea.module.css 와 같은 구조.
+   corner 가 버튼일 수 있어 baseline 이 아니라 center 로 맞춘다 (2026-08-06) */
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.875rem;
+}
+
+/* 기본 = 라벨 반대쪽 끝으로 밀어붙임 (글자수 카운트처럼 "행의 반대편"에 있어야 하는 값) */
+.corner {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+}
+
+/* 변형 = 라벨 텍스트 **바로 옆**. 인라인 액션 버튼처럼 라벨에 딸린 것이 멀리 떨어지면
+   무엇에 대한 액션인지 끊긴다 (2026-08-06 대표 지시) */
+.cornerInline {
+  margin-left: 0;
+}
+
+/* 설명 문구 = 라벨 텍스트 **바로 옆**, 좌측 기준 (2026-08-30 대표 지시).
+   입력 아래 힌트 줄로 두면 칸마다 한 줄씩 높이를 먹는다. 문구는 자르지 않는다 —
+   행에 안 들어가는 문구는 쓰는 쪽에서 짧게 바꾼다 (말줄임 금지, 대표 확정). */
+.labelHint {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-left: 0.125rem;
+  transition: color 0.15s;
+}
+
+/* 라벨 옆 필수 태그 — pill 은 태그에만 허용 (DESIGN.md §4-1) */
+.tag {
+  flex: none;
+  padding: 0.0938rem 0.4375rem;
+  font-size: 0.6562rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-tint);
+  border-radius: 62.4375rem;
+}
+
+/* 채워진 필드 — 라벨을 본문 잉크로 살짝 진하게 (완료감).
+ * :where 로 specificity 를 낮춰 아래 포커스 규칙이 항상 이긴다. */
+.field:has(:where(input, textarea):not(:placeholder-shown)) .label {
+  color: var(--ink);
+}
+
+/* 포커스 따라오는 액센트 — "지금 여기 입력 중" 신호 (아이콘과 같은 동작) */
+.field:focus-within .label {
+  color: var(--accent);
+}
+
+.wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  position: absolute;
+  left: 0.8125rem;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--ink-2);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: 0.15s;
+}
+.wrap:focus-within .icon {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.input {
+  width: 100%;
+  height: 2.875rem;
+  padding: 0 0.875rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  outline: none;
+  transition: 0.15s;
+}
+.hasIcon {
+  padding-left: 2.375rem;
+}
+.hasTrailing {
+  padding-right: 2.625rem;
+}
+.input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.55;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.reveal {
+  position: absolute;
+  right: 0.75rem;
+  display: flex;
+  padding: 0.25rem;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: 0.15s;
+}
+.reveal:hover {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.hint {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+}
+.hint a {
+  color: inherit;
+  text-decoration: none;
+}
+.hint a:hover {
+  color: var(--accent);
+}

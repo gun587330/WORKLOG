@@ -1,0 +1,98 @@
+/* Toast — 불투명 흰 카드. **유리 표면이 아니다**(2026-08-03 대표 지시).
+ * 토스트는 표·이미지 위에도 뜨는데 투명 표면에서는 에러 사유가 뒤 콘텐츠에 묻힌다 —
+ * 읽으라고 띄우는 표면이라 대비를 우선한다. GlassCard 를 쓰지 않는 유일한 박스다.
+ *
+ * 구 MVP(k-beauty-biz-buddy, shadcn) 골격 계승:
+ *   toast  p-6 pr-8 · flex items-center · 420px
+ *   close  absolute right-2 top-2 · opacity-0 → hover 시 표시
+ *   title  text-sm font-semibold  /  description  text-sm (같은 크기)
+ *
+ * 2026-08-03 대표 지시:
+ *   위치   우측 상단
+ *   표면   불투명 흰 카드 + 그림자 (유리 아님)
+ *   강조   제목 색(테마 토큰) 하나로. 테두리·좌측 바·아이콘 미사용
+ */
+
+.viewport {
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 200;              /* 모달(100)보다 위 — 모달 안 액션의 결과도 보여야 한다 */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 26.25rem;       /* 420px (원본) */
+  max-height: 100vh;
+  pointer-events: none;      /* 빈 영역이 화면 클릭을 막지 않게 */
+}
+
+.toast {
+  pointer-events: auto;
+  position: relative;
+  background: var(--paper);
+  border-radius: var(--radius-sm);      /* 원본 rounded-md 대응 */
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;                                /* space-x-4 (원본) */
+  width: 100%;
+  padding: 1.5rem 2rem 1.5rem 1.5rem;       /* p-6 pr-8 (원본) */
+  animation: toast-in 0.2s ease-out;
+}
+
+/* 강조는 제목 색 하나로 (대표 지시) */
+.destructive .title { color: var(--block); }
+.success .title     { color: var(--pass); }
+
+.body {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.title {
+  font-size: 0.875rem;       /* text-sm (원본) */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* 원본은 제목과 같은 크기 — 줄이면 위계가 달라진다 */
+.desc {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;   /* 서버 에러 원문에 긴 토큰이 섞일 수 있다 */
+}
+
+/* 닫기 — 우상단 절대배치, **항상 표시**(2026-08-03 대표 지시 — 원본은 hover 시에만이었다).
+   실패 알림은 사용자가 즉시 치우고 싶어하는 것이라 버튼을 찾게 만들면 안 된다. */
+.close {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  display: grid;
+  place-items: center;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  transition: color 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+.close:hover { color: var(--ink); background: var(--glass-bg); }
+
+/* 화면 **우측 바깥에서 왼쪽으로** 밀려 들어온다 (2026-08-03 대표 지시 — 구: 위에서 아래로).
+   토스트가 우측 상단에 서므로 등장 방향도 그 모서리를 따르는 편이 자연스럽다. */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}

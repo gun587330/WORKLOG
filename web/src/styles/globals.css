@@ -1,0 +1,37 @@
+/* Tailwind CSS v4 진입점 + 디자인 토큰 매핑 (ANSERX 에서 옮김 · 바뀐 점: 투어 CSS 없음)
+ * 폰트(Pretendard)는 layout.tsx 의 <link> 로 로드한다 — CSS @import 는 렌더 블로킹 체인. */
+
+@import "tailwindcss";
+@import "./theme.css";
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --radius-lg: var(--radius);
+  --radius-md: var(--radius-sm);
+}
+
+@layer base {
+  * { border-color: hsl(var(--border)); }
+  html { -webkit-text-size-adjust: 100%; }
+  /* 전 화면 유동 스케일 (DESIGN.md §2) — 1440px 까지 1.0, 2560px 에서 1.25 상한 */
+  html { font-size: clamp(1rem, calc(1rem + (100vw - 90rem) / 280), 1.25rem); }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+}

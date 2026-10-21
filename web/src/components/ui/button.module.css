@@ -1,0 +1,152 @@
+/* ─────────────────────────────────────────────────────────
+ * 버튼 스타일 원본 — 앱 전체에서 이 파일 하나뿐이다.
+ *
+ * 스펙 (docs/frontend/DESIGN.md §4 · 토스 벤치마크):
+ *   radius 0.875rem (pill 아님 — pill 은 링크·태그에만) · 높이 48/56 ·
+ *   폰트 15~17/700 · 누름 scale(.98) + 그림자 축소 · 보조 버튼은 불투명 뉴트럴 판.
+ *   네브바 버튼(2.75rem)은 네브바 박스(1.5rem)와 동심 곡률: 24 = 14 + 여백 10.
+ *
+ * 쓰는 법:
+ *   화면 컴포넌트 → <Button> (components/ui/button.tsx)
+ *   랜딩 CSS     → composes (landing.module.css 의 .btn* 는 여기의 별칭이다)
+ * ⚠️ 다른 파일에 버튼 스타일을 새로 만들지 말 것 — 2026-07-15 AuthButton 이
+ *    옛 pill 스펙을 복제했다가 시스템과 갈라진 사고의 재발 방지.
+ * ───────────────────────────────────────────────────────── */
+
+.btn {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  min-height: 3rem;
+  padding: 0 1.25rem;
+  border-radius: 0.875rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative; /* 로딩 스피너 오버레이 기준 */
+  transition: background .15s ease, transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+/* 토스의 "눌리는" 촉감 */
+.btn:active {
+  transform: scale(.98);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: default;
+  transform: none;
+}
+
+.cta {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0.375rem 1.125rem rgba(124, 92, 240, .28);
+}
+.cta:hover:not(:disabled) {
+  background: var(--accent-2);
+  box-shadow: 0 0.5rem 1.375rem rgba(124, 92, 240, .34);
+}
+.cta:active:not(:disabled) {
+  box-shadow: 0 0.1875rem 0.625rem rgba(124, 92, 240, .26);
+}
+.cta:disabled {
+  box-shadow: none;
+}
+
+/* 파괴적 액션(삭제 등) — 판정 트리오의 "불가" 색을 위험 신호로 공유 */
+.danger {
+  background: var(--block);
+  color: #fff;
+  box-shadow: 0 0.375rem 1.125rem rgba(196, 20, 46, .24);
+}
+.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--block) 88%, #000);
+  box-shadow: 0 0.5rem 1.375rem rgba(196, 20, 46, .3);
+}
+.danger:disabled {
+  box-shadow: none;
+}
+
+/* 보조 버튼 — **불투명 뉴트럴 판** (2026-09-04, ~~유리~~ 폐기).
+ *
+ * 유리(반투명 + blur + 흰 테두리)를 쓰던 시절의 문제: 뒤에 무엇이 오느냐에 따라 버튼이
+ * 배경에 녹아 "눌리는 것"으로 안 읽혔고, 흰 카드 위에서는 테두리만 남아 비활성처럼 보였다.
+ * 지금은 잉크 계열 옅은 판 + 실선 테두리 하나다 — 어떤 배경 위에서도 같은 얼굴이고,
+ * cta(보라 채움) 옆에 섰을 때 위계가 분명하다.
+ *
+ * ⚠️ 여기에 `backdrop-filter` 를 되돌리지 말 것 (DESIGN.md §4-1 유리 버튼 금지).
+ *    유리는 면(카드·패널)의 언어이지 액션의 언어가 아니다. */
+.secondary {
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper));
+  color: var(--ink);
+  border-color: var(--line);
+}
+.secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 9%, var(--paper));
+  border-color: color-mix(in srgb, var(--ink) 18%, var(--line));
+}
+.secondary:active:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 12%, var(--paper));
+}
+
+/* ── 크기 ── */
+.lg {
+  min-height: 3.5rem;
+  padding: 0 1.625rem;
+  font-size: 1.0625rem;
+  border-radius: 1rem;
+}
+
+/* 네브바 안 버튼 — 바깥 박스(1.5rem)와 동심이 되게 0.875rem 유지, 높이만 44 */
+.nav {
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  font-size: 0.875rem;
+  border-radius: 0.875rem;
+}
+
+/* sm — 박스 헤더·리스트 행 안의 소형 액션 (홈 대시보드가 첫 소비자) */
+.sm {
+  min-height: 1.875rem;
+  padding: 0 0.6875rem;
+  font-size: 0.7812rem;
+  border-radius: 0.5625rem;
+}
+
+/* 아이콘 전용 (위저드 "이전" 등) — 정사각 48, radius 는 시스템 그대로 14 */
+.iconOnly {
+  width: 3rem;
+  padding: 0;
+  flex: none;
+}
+
+.spin {
+  animation: spin .9s linear infinite;
+}
+/* 로딩 중: 원래 내용은 투명하게 자리만 지키고(폭 고정), 스피너를 중앙에 겹친다 */
+.ghost {
+  visibility: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+.spinOverlay {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+  .spin { animation-duration: 2s; }
+}

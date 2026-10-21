@@ -1,0 +1,17 @@
+/* 페이지 헤더 — ANSERX page-header.module.css 에서 옮김 · 바뀐 점: sticky 블러 없음(화면이 세로 100% 라 스크롤이 없다) */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.875rem;
+  margin-bottom: 0;
+  padding-inline: 0.5rem;
+}
+.text { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.25rem 0.75rem; min-width: 0; padding-left: 0.625rem; }
+.title { margin: 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -0.03em; }
+.desc { margin: 0; font-size: 0.8438rem; color: var(--ink-2); }
+.actions { display: flex; gap: 0.5rem; flex: none; align-items: center; }
+.lead { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.lead .text { padding-left: 0; }
+@media (max-width: 768px) { .title { font-size: 1.1875rem; } }
