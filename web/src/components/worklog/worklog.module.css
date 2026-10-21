@@ -414,10 +414,11 @@
 
 /* 앞으로 할 일 */
 .todo {
-  margin: 0;
-  padding: 0;
+  margin: 0 -0.5rem;             /* 행 호버 면이 카드 여백으로 0.5rem 번지게 ul 이 그만큼 넓다(가로 스크롤 없이) */
+  padding: 0 0.5rem;
   list-style: none;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   min-height: 0;
 }
@@ -486,12 +487,13 @@
 }
 .todoClickable {
   cursor: pointer;
-  margin: 0 -0.5rem;
+  margin: 0;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   border-radius: 0.625rem;
   transition: background 0.12s;
 }
+.todo li:not(.todoClickable) { padding-left: 0.5rem; padding-right: 0.5rem; }
 .todoClickable:hover { background: var(--bg-soft); }
 .footerLeft { margin-right: auto; }
 
