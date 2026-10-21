@@ -1,0 +1,60 @@
+/* 유리 카드 표면의 단일 원본 (DESIGN.md §4 — 뉴트럴 유리).
+ * 버튼(button.module.css)과 같은 체계: 다른 파일에 유리 표면을 새로 쓰지 말 것.
+ * - 랜딩 landing.module.css 의 .card 는 이 파일의 composes 별칭
+ * - 앱 화면은 <GlassCard> 컴포넌트를 쓴다
+ * 토큰(--glass-*)이 값의 원본이고, 여기는 "조합"의 원본이다.
+ *
+ * 2026-07-18 클리어 글래스 표준화 (CTO 결정, DESIGN.md §4 결정 로그):
+ * 카드 표면에서 backdrop blur 를 뺐다 — 7% fill + 테두리 + 엣지 광학만으로 "맑은 유리".
+ * 이유: ① 뒤가 또렷하게 비치는 투명 룩 채택 ② blur 는 카드가 움직이는 화면(다이얼 등)에서
+ * 매 프레임 재계산돼 버벅임의 원인. --glass-blur-* 토큰은 소형 조각(네브바 pill·글래스
+ * 버튼·FAQ·목업·오버레이)에서 계속 쓴다 — 카드 표면에만 blur 금지. */
+
+.card {
+  position: relative;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+/* 유리 광학 — 흰 배경에서도 유리로 읽히게 하는 핵심 (DESIGN.md §4 규칙 6).
+   광학은 "가장자리에만" — 내용(콘텐츠 영역)을 덮는 wash 금지.
+   ⚠️ z-index -1 = **콘텐츠 아래**. 표면(배경·테두리) 위에는 그대로 얹히지만 글자는 덮지 않는다.
+   구 `z-index: 2`(콘텐츠 위)에서는 좌상단 스페큘러(흰 0.5 → 26%)가 정확히 **박스 헤더 텍스트
+   자리**를 덮어 제목이 뿌옇게 보였다 (08-03 대표 지적). 주석의 "덮지 않는다" 규칙을 실제로 지키는 값. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  /* ⚠️ 정지점은 **절대 길이(rem)** 다. 퍼센트로 두면 카드가 클수록 광학도 같이 커져서
+     모서리 하이라이트가 아니라 **표면 전체를 덮는 얼룩**이 된다 — 설정 패널(폭 1000px+)에서
+     `transparent 26%` 가 260px 짜리 그림자처럼 보였다 (08-04 대표 지적).
+     길이를 고정하면 카드 크기와 무관하게 "가장자리에만" 규칙이 지켜진다 (DESIGN §4 규칙 6). */
+  background:
+    /* 좌상단 모서리 스페큘러만 — 우하단에 주면 본문 텍스트를 흰 wash 가 덮는다 */
+    linear-gradient(138deg,
+      rgba(255, 255, 255, 0.5) 0,
+      rgba(255, 255, 255, 0.04) 1.5rem,
+      transparent 5rem),
+    /* 색수차 — 좌상 시안 / 우하 마젠타를 극히 옅게 (유리 가장자리의 프리즘) */
+    linear-gradient(138deg, rgba(120, 220, 255, 0.09) 0, transparent 2.5rem),
+    linear-gradient(318deg, rgba(255, 140, 220, 0.08) 0, transparent 2.5rem);
+}
+
+/* flat 변형 (opt-in, B2 바이어 표면 분리) — 흰 지면에서는 유리가 안 읽힌다:
+   광학·그림자를 끄고 보더 하나로 경계를 만든다. 바이어 구역 카드의 표준 표면. */
+.flat {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.flat::after { content: none; }
+
+/* 콘텐츠 패딩 변형 — 앱 화면 기본값 (랜딩은 자체 레이아웃 클래스가 패딩을 잡는다) */
+.padded {
+  padding: 1.25rem 1.375rem;
+}
