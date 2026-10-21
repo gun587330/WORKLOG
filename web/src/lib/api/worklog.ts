@@ -7,7 +7,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Database, Json } from "@/types/database";
 import { failFrom, type ApiResult } from "./response";
-import type { ParsedWorkLog, CodeLink } from "@/lib/work-log";
+import { extractWikiLinks, type ParsedWorkLog, type CodeLink } from "@/lib/work-log";
 import type { ParsedWorkPlan } from "@/lib/work-plan";
 
 type Fn = Database["public"]["Functions"];
@@ -185,3 +185,15 @@ export async function getHomeStats(date: string): Promise<ApiResult<HomeStats>> 
   if (res.error) return res as ApiResult<HomeStats>;
   return { data: res.data as unknown as HomeStats, error: null };
 }
+
+/* ── 일기 (0015). 본문 [[코드]] 는 저장 때 links 로 함께 남는다 ── */
+export type DiaryEntry = Tables["diary_entries"]["Row"];
+export type DiaryInput = { id?: string | null; entryDate: string; title: string; body: string; tags: string[] };
+export const getDiary = (from?: string, to?: string) => call("list_diary", { ...(from ? { p_from: from } : {}), ...(to ? { p_to: to } : {}) });
+export const upsertDiary = (i: DiaryInput) =>
+  call("upsert_diary", {
+    p_id: nullId(i.id), p_entry_date: i.entryDate, p_title: i.title, p_body: i.body, p_tags: i.tags,
+    p_links: toLinks(extractWikiLinks(i.body)),
+  });
+export const deleteDiary = (id: string) => call("delete_diary", { p_id: id });
+

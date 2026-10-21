@@ -39,6 +39,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      diary_entries: {
+        Row: {
+          body_md: string
+          code: string
+          created_at: string
+          entry_date: string
+          id: string
+          tags: string[]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body_md: string
+          code: string
+          created_at?: string
+          entry_date: string
+          id?: string
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          code?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           code: string
@@ -591,6 +624,7 @@ export type Database = {
         Args: { p_from?: string; p_to?: string }
         Returns: string
       }
+      delete_diary: { Args: { p_id: string }; Returns: undefined }
       delete_goal: { Args: { p_id: string }; Returns: undefined }
       delete_plan: { Args: { p_id: string }; Returns: undefined }
       delete_prompt: { Args: { p_id: string }; Returns: undefined }
@@ -667,6 +701,25 @@ export type Database = {
       issue_mcp_token: {
         Args: { p_label: string; p_owner_email: string; p_token_hash: string }
         Returns: Json
+      }
+      list_diary: {
+        Args: { p_from?: string; p_limit?: number; p_to?: string }
+        Returns: {
+          body_md: string
+          code: string
+          created_at: string
+          entry_date: string
+          id: string
+          tags: string[]
+          title: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "diary_entries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       list_goals: {
         Args: { p_status?: string }
@@ -863,6 +916,32 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_diary: {
+        Args: {
+          p_body: string
+          p_entry_date: string
+          p_id: string
+          p_links: Json
+          p_tags: string[]
+          p_title: string
+        }
+        Returns: {
+          body_md: string
+          code: string
+          created_at: string
+          entry_date: string
+          id: string
+          tags: string[]
+          title: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "diary_entries"
           isOneToOne: true
           isSetofReturn: false
         }

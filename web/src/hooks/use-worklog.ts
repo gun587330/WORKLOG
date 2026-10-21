@@ -13,6 +13,7 @@ import {
   getWorkLogs, getWorkLog, insertWorkLog, deleteWorkLog, setLogTodoDone, upsertTodo, deleteTodo, type LogFilter, type TodoInput,
   getPrompts, upsertPrompt, deletePrompt, type PromptInput,
   getContextPack, getHomeStats,
+  getDiary, upsertDiary, deleteDiary, type DiaryInput,
 } from "@/lib/api/worklog";
 import type { ParsedWorkLog } from "@/lib/work-log";
 import type { ParsedWorkPlan } from "@/lib/work-plan";
@@ -165,3 +166,17 @@ export function useContextPack() {
 export function useHomeStats(date: string) {
   return useQuery({ queryKey: K.home(date), queryFn: () => getHomeStats(date).then(unwrap), enabled: !!date });
 }
+
+/* ── 일기 ── */
+export function useDiary() {
+  return useQuery({ queryKey: ["diary"], queryFn: () => getDiary().then(unwrap) });
+}
+export function useUpsertDiary() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (i: DiaryInput) => upsertDiary(i).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["diary"] }) });
+}
+export function useDeleteDiary() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: string) => deleteDiary(id).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: ["diary"] }) });
+}
+

@@ -36,6 +36,7 @@
 | 0012 | `mcp` | `private.mcp_tokens` · `private.mcp_pending` · `public.mcp_audit` + `mcp_read` · `mcp_prepare` · `mcp_commit` · `issue_mcp_token` · `revoke_mcp_tokens` · `list_mcp_audit` |
 | 0013 | `mcp_goal_by_code` | MCP save_goal 이 목표를 코드(G12)로 가리킨다 |
 | 0014 | `mcp_confirm_short_kst` | 한 글자 승인("네") 허용, 컨텍스트 팩 날짜를 한국 시간으로 |
+| 0015 | `diary` | `diary_entries` + `list_diary` · `upsert_diary`(본문 링크 함께) · `delete_diary`, `links.from_type` 에 `diary` 추가 |
 
 ## 10. 결정 로그
 
@@ -53,4 +54,4 @@
   토큰 해시를 검사한 뒤 토큰 주인을 이번 트랜잭션의 로그인 사용자로 세운다(`set_config('request.jwt.claim.sub')`). 그래서 기존 RPC 의
   `assert_owner()` 와 검증 로직을 그대로 재사용한다. 쓰기는 preview 가 내용을 `mcp_pending` 에 보관하고 commit 은 보관한 내용만 저장해,
   사용자에게 보여 준 것과 저장되는 것이 어긋날 수 없다. 실패한 commit 은 트랜잭션째 되돌아가 확인 번호도 살아 있다. 삭제 도구는 두지 않았다.
-
+- 2026-10-22 (0015) 개인 일기. 나중에 일기 · 작업을 함께 엮는 확장을 위해 코드(D-날짜)와 본문 링크를 처음부터 남긴다. 개인 글이라 컨텍스트 팩 · MCP 에는 내지 않았다.
