@@ -23,12 +23,12 @@
   font-weight: 900;
   letter-spacing: -0.04em;
 }
-.brand i {
+.brand img {
   width: 1.125rem;
   height: 1.125rem;
-  border-radius: 0.35rem;
-  background: var(--accent);
-  display: inline-block;
+  border-radius: 0.25rem;          /* 심볼 = 사이트 파비콘(public/symbol.svg = app/icon.svg) */
+  display: block;
+  flex: none;
 }
 .title {
   margin: 0;
