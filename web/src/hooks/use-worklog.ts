@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap } from "@/lib/api/response";
 import {
   getProjects, upsertProject, setProjectStatus, type ProjectInput,
+  getProjectOverview, getProject, saveProject, type ProjectProfileInput,
   getGoals, upsertGoal, deleteGoal, type GoalInput,
   getPlans, getPlan, insertPlan, deletePlan, setPlanItemStatus,
   getWorkLogs, getWorkLog, insertWorkLog, deleteWorkLog, setLogTodoDone, upsertTodo, deleteTodo, type LogFilter, type TodoInput,
@@ -49,7 +50,21 @@ export function useSetProjectStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { id: string; status: "active" | "archived" }) => setProjectStatus(v.id, v.status).then(unwrap),
-    onSuccess: () => qc.invalidateQueries({ queryKey: K.projects }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: K.projects }); qc.invalidateQueries({ queryKey: ["project"] }); },
+  });
+}
+/* 프로젝트 페이지 (0022): 목록 집계 · 상세 집계 · 폼 저장. 키는 프로젝트 키 아래라 upsert · 보관이 같이 무효화한다 */
+export function useProjectOverview() {
+  return useQuery({ queryKey: [...K.projects, "overview"], queryFn: () => getProjectOverview().then(unwrap) });
+}
+export function useProject(id: string | null) {
+  return useQuery({ queryKey: ["project", id], queryFn: () => getProject(id as string).then(unwrap), enabled: !!id });
+}
+export function useSaveProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (i: ProjectProfileInput) => saveProject(i).then(unwrap),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: K.projects }); qc.invalidateQueries({ queryKey: ["project"] }); },
   });
 }
 

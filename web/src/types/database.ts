@@ -413,7 +413,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          intro_md: string | null
           name: string
+          objective_md: string | null
           slug: string
           sort: number
           status: string
@@ -424,7 +426,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          intro_md?: string | null
           name: string
+          objective_md?: string | null
           slug: string
           sort?: number
           status?: string
@@ -435,7 +439,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          intro_md?: string | null
           name?: string
+          objective_md?: string | null
           slug?: string
           sort?: number
           status?: string
@@ -683,6 +689,7 @@ export type Database = {
       delete_todo: { Args: { p_id: string }; Returns: undefined }
       delete_work_log: { Args: { p_id: string }; Returns: undefined }
       get_plan: { Args: { p_id: string }; Returns: Json }
+      get_project: { Args: { p_id: string }; Returns: Json }
       get_work_log: { Args: { p_id: string }; Returns: Json }
       home_stats: { Args: { p_date?: string }; Returns: Json }
       insert_links: {
@@ -836,7 +843,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          intro_md: string | null
           name: string
+          objective_md: string | null
           slug: string
           sort: number
           status: string
@@ -930,7 +939,46 @@ export type Database = {
         Args: { p_args?: Json; p_token: string; p_tool: string }
         Returns: Json
       }
+      project_hours: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          hours: number
+          project_id: string
+        }[]
+      }
+      project_overview: { Args: never; Returns: Json }
       revoke_mcp_tokens: { Args: { p_label?: string }; Returns: number }
+      save_project: {
+        Args: {
+          p_abbr: string
+          p_description: string
+          p_id: string
+          p_intro_md: string
+          p_name: string
+          p_objective_md: string
+          p_slug: string
+          p_sort: number
+        }
+        Returns: {
+          abbr: string
+          created_at: string
+          description: string | null
+          id: string
+          intro_md: string | null
+          name: string
+          objective_md: string | null
+          slug: string
+          sort: number
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_log_todo_done: {
         Args: { p_done: boolean; p_id: string }
         Returns: {
@@ -985,7 +1033,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          intro_md: string | null
           name: string
+          objective_md: string | null
           slug: string
           sort: number
           status: string
@@ -1067,7 +1117,9 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          intro_md: string | null
           name: string
+          objective_md: string | null
           slug: string
           sort: number
           status: string

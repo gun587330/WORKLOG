@@ -244,3 +244,40 @@ export async function scrapSignedUrl(path: string, download?: string): Promise<s
   return r.data?.signedUrl ?? null;
 }
 
+
+/* ── 프로젝트 페이지 (0022). 소개 · 목표 글 + 프로젝트 축 집계 ── */
+/** project_overview 의 jsonb 원소 모양 */
+export type ProjectOverview = Project & {
+  goals_total: number; goals_active: number; goals_done: number;
+  items_total: number; items_done: number;
+  logs_count: number; tasks_count: number;
+  hours_total: number; hours_28d: number;
+  last_log_date: string | null; open_todos: number;
+};
+/** get_project 의 jsonb 모양 */
+export type ProjectDetail = {
+  project: Project;
+  goals: { id: string; code: string; title: string; status: "active" | "done" | "paused"; period_start: string | null; period_end: string | null; note: string | null; item_count: number; done_count: number }[];
+  open_items: { id: string; code: string; title: string; due_date: string | null; goal_code: string; plan_code: string }[];
+  open_todos: { id: string; text: string; needs_decision: boolean; due_date: string | null; source: string | null; log_id: string | null }[];
+  recent_logs: { id: string; code: string; log_date: string; summary: string | null; task_count: number; done_count: number }[];
+  weeks: { week_start: string; hours: number }[];
+  hours_total: number; logs_count: number; tasks_count: number;
+};
+export async function getProjectOverview(): Promise<ApiResult<ProjectOverview[]>> {
+  const res = await call("project_overview");
+  if (res.error) return res as ApiResult<ProjectOverview[]>;
+  return { data: res.data as unknown as ProjectOverview[], error: null };
+}
+export async function getProject(id: string): Promise<ApiResult<ProjectDetail>> {
+  const res = await call("get_project", { p_id: id });
+  if (res.error) return res as ApiResult<ProjectDetail>;
+  return { data: res.data as unknown as ProjectDetail, error: null };
+}
+export type ProjectProfileInput = ProjectInput & { introMd?: string; objectiveMd?: string };
+/** 화면 폼 저장. 고칠 때 slug 는 서버가 기존 값을 유지한다(md 원문이 P-코드를 가리킨다) */
+export const saveProject = (i: ProjectProfileInput) =>
+  call("save_project", {
+    p_id: nullId(i.id), p_slug: i.slug.trim().toUpperCase(), p_name: i.name.trim(), p_abbr: i.abbr.trim(),
+    p_description: nullStr(i.description), p_intro_md: nullStr(i.introMd), p_objective_md: nullStr(i.objectiveMd), p_sort: i.sort ?? 100,
+  });

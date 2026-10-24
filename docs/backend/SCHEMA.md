@@ -1,12 +1,12 @@
 # WORK LOG 백엔드 — 스키마 (SCHEMA)
 
-> 개체의 뜻은 `docs/VOCAB.md` 가 정하고, 이 문서는 **테이블 · 마이그레이션 순서 · 결정 로그**를 적는다. (최종 수정: 2026-10-21)
+> 개체의 뜻은 `docs/VOCAB.md` 가 정하고, 이 문서는 **테이블 · 마이그레이션 순서 · 결정 로그**를 적는다. (최종 수정: 2026-10-24)
 
 ## 1. 테이블
 
 | 테이블 | 코드 | 비고 |
 |---|---|---|
-| `projects` | `P-<SLUG>` | 분류 축. 시드 10개(0003) |
+| `projects` | `P-<SLUG>` | 분류 축. 시드 10개(0003). `intro_md` · `objective_md`(소개 · 목표 글, 0022) |
 | `goals` | `G<n>` | `code` 는 시퀀스 `goal_code_seq` 로 발급. 재사용 없음 |
 | `plans` | `PL-…` | `raw_md` 보존 |
 | `plan_items` | `G<n>-<m>` | `(goal_id, seq)` 유일. `due_date` 선택 |
@@ -41,6 +41,7 @@
 | 0018 | `todo_start_date` | 할 일 시작일 · 기간 검사, `upsert_todo` 인자 추가, 홈 집계 `calendar.ranges` |
 | 0019 | `calendar_all_todos` | 기한만 있는 할 일도 달력에(하루짜리 줄) |
 | 0020 | `scraps` | `scraps` + Storage 버킷 `scraps`(비공개 · 50MB · 소유자 정책) + RPC 3개, links 종류에 diary · scrap |
+| 0022 | `projects_page` | `projects.intro_md` · `objective_md` + `save_project` · `project_hours` · `project_overview` · `get_project`(프로젝트 페이지 집계) |
 | 0015 | `diary` | `diary_entries` + `list_diary` · `upsert_diary`(본문 링크 함께) · `delete_diary`, `links.from_type` 에 `diary` 추가 |
 
 ## 10. 결정 로그
@@ -61,4 +62,4 @@
   사용자에게 보여 준 것과 저장되는 것이 어긋날 수 없다. 실패한 commit 은 트랜잭션째 되돌아가 확인 번호도 살아 있다. 삭제 도구는 두지 않았다.
 - 2026-10-22 (0015) 개인 일기. 나중에 일기 · 작업을 함께 엮는 확장을 위해 코드(D-날짜)와 본문 링크를 처음부터 남긴다. 개인 글이라 컨텍스트 팩 · MCP 에는 내지 않았다.
 - 2026-10-22 (0020) 스크랩. 파일 본체는 Storage, 메타데이터는 표. 표는 다른 표처럼 RPC 로만, Storage 는 로그인(=소유자) 정책으로만 연다. 삭제 RPC 는 경로를 돌려주고 화면이 Storage API 로 본체를 지운다(SQL 로 storage.objects 를 지우면 파일이 남는다).
-
+- 2026-10-24 (0022) 프로젝트 페이지. 소개 · 목표 글은 새 표가 아니라 `projects` 의 두 컬럼으로 뒀다(프로젝트당 한 글이고, 목록 · 칩이 이미 이 표를 본다). 화면 저장은 새 함수 `save_project` 가 맡고 기존 `upsert_project` 는 그대로 둔다(MCP `create_project` 가 그 서명을 부른다). `save_project` 는 고칠 때 slug 를 받지 않고 기존 값을 유지한다(기록 · 계획 md 원문이 `P-코드` 를 가리키므로). 투입 시간은 0009 와 같은 근사식을 `project_hours(from, to)` 로 빼서 목록 · 상세 · 주간 추이가 같은 수를 보게 했다.
