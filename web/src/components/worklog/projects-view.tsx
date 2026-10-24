@@ -11,6 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { GripVertical } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
-import { useProject, useProjectOverview, useSaveProject, useSetProjectStatus } from "@/hooks/use-worklog";
+import { useProject, useProjectOverview, useSaveProject, useSetProjectStatus, useUpsertProject } from "@/hooks/use-worklog";
 import type { ProjectDetail, ProjectOverview } from "@/lib/api/worklog";
 import { formatHours } from "@/lib/work-log";
 import { fmtKDate, fmtMD, fmtPeriod, todayISO } from "@/lib/format";
@@ -29,6 +30,8 @@ import { WorkMarkdown } from "./work-markdown";
 import s from "./worklog.module.css";
 
 type Filter = "active" | "archived" | "all";
+type SortMode = "hours" | "manual";
+const SORT_KEY = "worklog.projects.sort";
 const SLUG_RE = /^[A-Z0-9][A-Z0-9-]{0,30}$/;
 const pctOf = (done: number, total: number) => (total ? Math.round((done / total) * 100) : null);
 
@@ -54,10 +57,55 @@ export function ProjectsView() {
   const [filter, setFilter] = useState<Filter>("active");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState<{ open: boolean; project: ProjectOverview | null }>({ open: false, project: null });
+  // 정렬: 투입순(총 투입 많은 순, 기본) · 내 순서(sort 컬럼, 끌어서 바꿈). 선택은 브라우저에 기억
+  const [sortMode, setSortMode] = useState<SortMode>("hours");
+  useEffect(() => { try { if (localStorage.getItem(SORT_KEY) === "manual") setSortMode("manual"); } catch { /* 저장소 없음 */ } }, []);
+  const changeSort = (m: SortMode) => { setSortMode(m); setManualOrder(null); try { localStorage.setItem(SORT_KEY, m); } catch { /* 저장소 없음 */ } };
+  // 끌어 놓는 동안의 순서(전체 프로젝트 id). 놓으면 sort 를 저장하고, 서버가 같은 순서를 돌려주므로 그대로 둔다
+  const [manualOrder, setManualOrder] = useState<string[] | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const upsert = useUpsertProject();
+  const toast = useToast();
 
   const rows = overview.data ?? [];
   const activeCount = rows.filter((p) => p.status === "active").length;
-  const shown = useMemo(() => rows.filter((p) => filter === "all" || p.status === filter), [rows, filter]);
+  const sorted = useMemo(() => {
+    const list = rows.slice();
+    if (sortMode === "hours") return list.sort((a, b) => Number(b.hours_total) - Number(a.hours_total) || a.sort - b.sort || a.name.localeCompare(b.name));
+    list.sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name));
+    if (!manualOrder) return list;
+    const idx = new Map(manualOrder.map((id, i) => [id, i]));
+    return list.sort((a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9));
+  }, [rows, sortMode, manualOrder]);
+  const shown = useMemo(() => sorted.filter((p) => filter === "all" || p.status === filter), [sorted, filter]);
+
+  /* 끌어서 순서 바꾸기(내 순서일 때만). 카드 위로 끌고 가면 그 자리로 미리 옮겨 보여 주고, 놓으면 바뀐 sort 만 저장한다 */
+  const onDragStart = (id: string) => { setDragId(id); setManualOrder(sorted.map((p) => p.id)); };
+  const onDragEnter = (overId: string) => {
+    if (!dragId || dragId === overId) return;
+    setManualOrder((prev) => {
+      const cur = prev ?? sorted.map((p) => p.id);
+      const from = cur.indexOf(dragId), to = cur.indexOf(overId);
+      if (from < 0 || to < 0 || from === to) return prev;
+      const next = cur.slice(); next.splice(from, 1); next.splice(to, 0, dragId);
+      return next;
+    });
+  };
+  const onDragEnd = async () => {
+    const id = dragId;
+    setDragId(null);
+    if (!id || !manualOrder) return;
+    const byId = new Map(rows.map((p) => [p.id, p]));
+    const changed = manualOrder.map((pid, i) => ({ p: byId.get(pid), sort: (i + 1) * 10 })).filter((x): x is { p: ProjectOverview; sort: number } => !!x.p && x.p.sort !== x.sort);
+    if (changed.length === 0) return;
+    try {
+      await Promise.all(changed.map(({ p, sort }) => upsert.mutateAsync({ id: p.id, slug: p.slug, name: p.name, abbr: p.abbr, description: p.description ?? "", sort })));
+      toast({ title: t("orderSaved"), variant: "success" });
+    } catch (e) {
+      setManualOrder(null);
+      toast({ title: tc("saveFailed"), description: (e as Error).message, variant: "destructive" });
+    }
+  };
 
   // 처음 열면 ?project=<slug> 또는 첫 진행 중 프로젝트를 고른다
   useEffect(() => {
@@ -84,18 +132,27 @@ export function ProjectsView() {
             <p className={s.secLab}>{t("list")} <small>{t("listSub", { count: rows.length, active: activeCount })}</small></p>
             <Button size="sm" onClick={() => setForm({ open: true, project: null })}>{t("add")}</Button>
           </div>
-          <div className={s.chips} style={{ marginTop: "0.625rem" }}>
-            <Chip on={filter === "active"} size="sm" onClick={() => setFilter("active")}>{t("filterActive")}</Chip>
-            <Chip on={filter === "archived"} size="sm" onClick={() => setFilter("archived")}>{t("filterArchived")}</Chip>
-            <Chip on={filter === "all"} size="sm" onClick={() => setFilter("all")}>{t("filterAll")}</Chip>
+          <div className={`${s.row} ${s.pjTools}`}>
+            <div className={s.chips}>
+              <Chip on={filter === "active"} size="sm" onClick={() => setFilter("active")}>{t("filterActive")}</Chip>
+              <Chip on={filter === "archived"} size="sm" onClick={() => setFilter("archived")}>{t("filterArchived")}</Chip>
+              <Chip on={filter === "all"} size="sm" onClick={() => setFilter("all")}>{t("filterAll")}</Chip>
+            </div>
+            <Segmented ariaLabel={t("sortAria")} size="sm" value={sortMode} onChange={changeSort} options={[{ value: "hours", label: t("sortHours") }, { value: "manual", label: t("sortManual") }]} />
           </div>
           <div className={s.pjCards}>
-            {overview.isLoading && Array.from({ length: 4 }, (_, i) => <Skeleton key={i} height="6rem" radius={16} />)}
+            {overview.isLoading && Array.from({ length: 4 }, (_, i) => <Skeleton key={i} height="5rem" radius={16} />)}
             {overview.isError && <p className={s.errorNote}>{tc("loadFailed")}</p>}
             {!overview.isLoading && !overview.isError && shown.length === 0 && <p className={s.empty}>{t("empty")}</p>}
-            {shown.map((p) => <ProjectCard key={p.id} p={p} on={p.id === selectedId} onPick={() => setSelectedId(p.id)} />)}
+            {shown.map((p) => (
+              <ProjectCard
+                key={p.id} p={p} on={p.id === selectedId} onPick={() => setSelectedId(p.id)}
+                draggable={sortMode === "manual"} dragging={dragId === p.id}
+                onDragStart={() => onDragStart(p.id)} onDragEnter={() => onDragEnter(p.id)} onDragEnd={onDragEnd}
+              />
+            ))}
           </div>
-          <div className={s.cfoot}><span>{t("foot1")}</span><span>{t("foot2")}</span></div>
+          <div className={s.cfoot}><span>{sortMode === "manual" ? t("footReorder") : t("foot")}</span></div>
         </section>
 
         {/* 우: 선택한 프로젝트 상세 */}
@@ -116,17 +173,32 @@ export function ProjectsView() {
   );
 }
 
-function ProjectCard({ p, on, onPick }: { p: ProjectOverview; on: boolean; onPick: () => void }) {
+function ProjectCard({ p, on, onPick, draggable, dragging, onDragStart, onDragEnter, onDragEnd }: {
+  p: ProjectOverview; on: boolean; onPick: () => void;
+  draggable: boolean; dragging: boolean; onDragStart: () => void; onDragEnter: () => void; onDragEnd: () => void;
+}) {
   const t = useTranslations("wl.projects");
   const pct = pctOf(p.items_done, p.items_total);
   return (
-    <button type="button" className={`${s.pjCard} ${on ? s.pjCardOn : ""} ${p.status !== "active" ? s.pjCardDim : ""}`} onClick={onPick} aria-pressed={on}>
+    <button
+      type="button"
+      className={`${s.pjCard} ${on ? s.pjCardOn : ""} ${p.status !== "active" ? s.pjCardDim : ""} ${dragging ? s.pjCardDrag : ""}`}
+      onClick={onPick}
+      aria-pressed={on}
+      draggable={draggable}
+      onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
+      onDragEnter={onDragEnter}
+      onDragOver={(e) => { if (draggable) e.preventDefault(); }}
+      onDrop={(e) => e.preventDefault()}
+      onDragEnd={onDragEnd}
+    >
       <span className={s.pjCardHead}>
+        {draggable && <GripVertical className={s.pjGrip} aria-label={t("grip")} />}
         <b>{p.name}</b>
         <span className={s.code}>P-{p.slug}</span>
         {p.status !== "active" && <Chip static size="sm">{t("statusArchived")}</Chip>}
       </span>
-      <span className={s.pjCardDesc}>{p.description || "·"}</span>
+      {p.description && <span className={s.pjCardDesc}>{p.description}</span>}
       <span className={s.pjCardBar}>
         <span className={s.bar}><i className={s.barFill} style={{ width: `${pct ?? 0}%` }} /></span>
         <span>{pct === null ? t("cardNoItems") : t("cardItems", { done: p.items_done, total: p.items_total })}</span>
