@@ -1787,23 +1787,85 @@ a.todaySrc:hover { text-decoration: underline; }
   gap: 1.25rem;
   margin-top: 0.75rem;
   padding-right: 0.25rem;
+  min-width: 0;
+  overflow-x: hidden;                  /* 긴 링크 · 말풍선 때문에 가로로 밀리지 않게 */
 }
-.pjDetail .stats { gap: 0.75rem; }
-.pjDetail .stat dd small {
+.pjDetail > * { min-width: 0; flex: none; }
+/* 1행: 8주 투입 · 통계를 반반으로, 각각 회색 박스(.pjText 와 같은 면). 두 박스 높이를 맞춘다 */
+.pjTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+.pjBox {
+  min-width: 0;
+  background: var(--bg-soft);
+  border-radius: 1rem;
+  padding: 1rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+}
+.pjChart {                            /* 회색 박스 안의 그래프 면 = 흰 박스 (2026-10-24 지시) */
+  flex: 1;
+  min-height: 7rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-radius: 0.75rem;
+  padding: 1.75rem 0.75rem 0.5rem;     /* 위: 말풍선 자리 */
+  margin-top: 0.25rem;
+  box-shadow: 0 0.0625rem 0.125rem rgba(22, 21, 28, 0.03);
+}
+.pjChart .pjWeeks {
+  flex: 1;
+  height: auto;
+  min-height: 4.5rem;
+  padding-top: 0;
+}
+.pjStats {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;      /* 왼쪽 막대 박스 높이에 맞춰 4줄을 고르게 */
+}
+.pjStat {
+  display: flex;
+  flex-wrap: wrap;                     /* 아주 좁아지면 값이 다음 줄로, 칸 밖으로 넘치지 않게 */
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding: 0.5rem 0.125rem;
+  border-bottom: 1px solid var(--line);
+}
+.pjStat:last-child { border-bottom: 0; }
+.pjStat dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.pjStat dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pjStat dd small {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--ink-2);
 }
-.pjTwo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
 .pjText {
+  min-width: 0;
   background: var(--bg-soft);
   border-radius: 1rem;
   padding: 1rem 1.125rem;
-  min-height: 7rem;
+  min-height: 5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -1820,7 +1882,9 @@ a.todaySrc:hover { text-decoration: underline; }
 }
 .pjLab small { font-weight: 600; }
 .pjText .pjLab { margin-bottom: 0; }
-.pjMd { font-size: 0.8125rem; line-height: 1.65; }
+.pjMd { font-size: 0.8125rem; line-height: 1.65; min-width: 0; overflow-wrap: anywhere; }
+.pjMd :global(pre) { overflow-x: auto; max-width: 100%; }
+.pjMd :global(table) { display: block; overflow-x: auto; max-width: 100%; }
 .pjMd :global(p) { margin: 0 0 0.5rem; }
 .pjMd :global(p:last-child) { margin-bottom: 0; }
 .pjMd :global(ul), .pjMd :global(ol) { margin: 0 0 0.5rem; padding-left: 1.25rem; }
@@ -1828,7 +1892,7 @@ a.todaySrc:hover { text-decoration: underline; }
 .pjWeeks {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: 0.5rem;
+  gap: 0.25rem;                        /* 막대 사이 간격은 겹치지 않는 최소(2026-10-24 지시) */
   align-items: end;
   height: 5.5rem;
   padding-top: 1.5rem;                 /* 말풍선 자리 */
@@ -1844,7 +1908,7 @@ a.todaySrc:hover { text-decoration: underline; }
 }
 .pjWeek i {
   display: block;
-  width: 100%;
+  width: 100%;                         /* 칸을 꽉 채우고 칸 사이 gap 만 남긴다 */
   border-radius: 0.25rem 0.25rem 0 0;
   background: var(--accent);
   opacity: 0.8;
@@ -1852,10 +1916,14 @@ a.todaySrc:hover { text-decoration: underline; }
 }
 .pjWeek:hover i { opacity: 1; }
 .pjWeek:hover .tip { display: block; }
+.pjWeek:first-child .tip { left: 0; transform: none; }
+.pjWeek:last-child .tip { left: auto; right: 0; transform: none; }
 .pjWeek small {
   font-family: ui-monospace, Menlo, monospace;
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
+  letter-spacing: -0.03em;
   color: var(--ink-2);
+  white-space: nowrap;
 }
 .pjList {
   display: flex;
@@ -1921,5 +1989,5 @@ a.todaySrc:hover { text-decoration: underline; }
   gap: 0.75rem;
 }
 @media (max-width: 64rem) {
-  .pjSplit, .pjTwo, .pjSlugRow { grid-template-columns: 1fr; }
+  .pjSplit, .pjTop, .pjSlugRow { grid-template-columns: 1fr; }
 }

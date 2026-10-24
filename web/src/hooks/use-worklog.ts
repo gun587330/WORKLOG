@@ -54,11 +54,12 @@ export function useSetProjectStatus() {
   });
 }
 /* 프로젝트 페이지 (0022): 목록 집계 · 상세 집계 · 폼 저장. 키는 프로젝트 키 아래라 upsert · 보관이 같이 무효화한다 */
-export function useProjectOverview() {
-  return useQuery({ queryKey: [...K.projects, "overview"], queryFn: () => getProjectOverview().then(unwrap) });
+/** today(YYYY-MM-DD)는 키에만 들어간다. 서버는 조회 시점의 오늘(KST)로 8주 · 28일을 계산하므로, 날짜가 바뀌면 키가 바뀌어 다시 읽는다 */
+export function useProjectOverview(today: string) {
+  return useQuery({ queryKey: [...K.projects, "overview", today], queryFn: () => getProjectOverview().then(unwrap), enabled: !!today });
 }
-export function useProject(id: string | null) {
-  return useQuery({ queryKey: ["project", id], queryFn: () => getProject(id as string).then(unwrap), enabled: !!id });
+export function useProject(id: string | null, today: string) {
+  return useQuery({ queryKey: ["project", id, today], queryFn: () => getProject(id as string).then(unwrap), enabled: !!id && !!today });
 }
 export function useSaveProject() {
   const qc = useQueryClient();
@@ -76,12 +77,12 @@ export function useUpsertGoal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (i: GoalInput) => upsertGoal(i).then(unwrap),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: K.goals }); qc.invalidateQueries({ queryKey: ["home"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: K.goals }); qc.invalidateQueries({ queryKey: ["home"] }); invalidateProjectSide(qc); },
   });
 }
 export function useDeleteGoal() {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (id: string) => deleteGoal(id).then(unwrap), onSuccess: () => qc.invalidateQueries({ queryKey: K.goals }) });
+  return useMutation({ mutationFn: (id: string) => deleteGoal(id).then(unwrap), onSuccess: () => { qc.invalidateQueries({ queryKey: K.goals }); invalidateProjectSide(qc); } });
 }
 
 /* ── 계획 ── */
@@ -91,7 +92,13 @@ export function usePlans() {
 export function usePlan(id: string | null) {
   return useQuery({ queryKey: K.plan(id), queryFn: () => getPlan(id as string).then(unwrap), enabled: !!id });
 }
+/** 프로젝트 화면(목록 카드 · 상세)은 목표 · 계획 · 기록 · 할 일을 모아 보여 주므로 그쪽이 바뀌면 같이 다시 읽는다 */
+function invalidateProjectSide(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: [...K.projects, "overview"] });
+  qc.invalidateQueries({ queryKey: ["project"] });
+}
 function invalidatePlanSide(qc: ReturnType<typeof useQueryClient>) {
+  invalidateProjectSide(qc);
   qc.invalidateQueries({ queryKey: K.plans });
   qc.invalidateQueries({ queryKey: ["plan"] });
   qc.invalidateQueries({ queryKey: K.goals });
@@ -143,7 +150,7 @@ export function useSetLogTodoDone() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (v: { id: string; done: boolean }) => setLogTodoDone(v.id, v.done).then(unwrap),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); invalidateProjectSide(qc); },
   });
 }
 
@@ -151,14 +158,14 @@ export function useUpsertTodo() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (i: TodoInput) => upsertTodo(i).then(unwrap),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); invalidateProjectSide(qc); },
   });
 }
 export function useDeleteTodo() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteTodo(id).then(unwrap),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["home"] }); qc.invalidateQueries({ queryKey: ["log"] }); invalidateProjectSide(qc); },
   });
 }
 
