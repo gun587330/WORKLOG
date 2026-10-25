@@ -409,7 +409,11 @@
       "noPreview": "{ext} 파일은 미리보기가 없어요. 내려받아 열어 주세요",
       "addedAt": "{date} 에 올림",
       "deleteTitle": "스크랩을 삭제할까요?",
-      "deleteBody": "{code} 과 저장된 파일이 지워져요. 되돌릴 수 없어요."
+      "deleteBody": "{code} 과 저장된 파일이 지워져요. 되돌릴 수 없어요.",
+      "sheets": "시트",
+      "sheetEmpty": "빈 시트예요",
+      "sheetFailed": "{ext} 파일을 읽지 못했어요. 내려받아 열어 주세요",
+      "sheetCut": "앞쪽 {rows}행 · {cols}열만 보여 줘요(전체 {totalRows}행 · {totalCols}열). 전부 보려면 내려받아 주세요"
     }
   }
 }

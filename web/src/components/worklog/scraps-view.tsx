@@ -6,6 +6,7 @@
  * 카드를 누르면 보기 모달(왼쪽 미리보기 · 오른쪽 정보 폼, 푸터 [삭제] [내려받기 · 열기] [닫기] [저장]).
  * 파일 본체는 Supabase Storage 비공개 버킷 'scraps', 열 때마다 1시간짜리 주소를 받는다(0020).
  * HTML 은 격리된 iframe(srcdoc, sandbox: 스크립트만 허용 · 사이트 쿠키 접근 없음)으로 그대로 보여 준다.
+ * 엑셀(.xlsx · .xlsm)은 scrap-sheet-preview 가 브라우저에서 읽어 시트 칩 + 표로 보여 준다.
  */
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -22,6 +23,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAddScrapLink, useDeleteScrap, useScraps, useUpdateScrap, useUploadScrapFile } from "@/hooks/use-worklog";
 import { SCRAP_MAX_BYTES, scrapSignedUrl, type Scrap } from "@/lib/api/worklog";
 import { fmtKDate, toISO } from "@/lib/format";
+import { ScrapSheetPreview } from "./scrap-sheet-preview";
 import s from "./worklog.module.css";
 
 type Filter = "all" | "image" | "doc" | "web" | "link" | "etc";
@@ -30,8 +32,9 @@ const ext = (name: string | null) => (name?.match(/\.([a-z0-9]{1,6})$/i)?.[1] ??
 const isImage = (x: Scrap) => x.kind === "file" && (x.mime_type ?? "").startsWith("image/");
 const isPdf = (x: Scrap) => x.kind === "file" && (x.mime_type === "application/pdf" || ext(x.file_name) === "pdf");
 const isHtml = (x: Scrap) => x.kind === "file" && (x.mime_type === "text/html" || ["html", "htm"].includes(ext(x.file_name)));
+const isSheet = (x: Scrap) => x.kind === "file" && (["xlsx", "xlsm"].includes(ext(x.file_name)) || x.mime_type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 const isText = (x: Scrap) => x.kind === "file" && ((x.mime_type ?? "").startsWith("text/") || ["md", "txt", "csv", "json", "ts", "tsx", "js", "sql", "css", "yml", "yaml"].includes(ext(x.file_name))) && !isHtml(x);
-const groupOf = (x: Scrap): Filter => (x.kind === "link" ? "link" : isImage(x) ? "image" : isHtml(x) ? "web" : isPdf(x) || isText(x) ? "doc" : "etc");
+const groupOf = (x: Scrap): Filter => (x.kind === "link" ? "link" : isImage(x) ? "image" : isHtml(x) ? "web" : isPdf(x) || isText(x) || isSheet(x) ? "doc" : "etc");
 const fmtSize = (n: number | null) => (n == null ? "" : n < 1024 ? `${n}B` : n < 1048576 ? `${(n / 1024).toFixed(0)}KB` : `${(n / 1048576).toFixed(1)}MB`);
 const splitTags = (v: string) => v.split(",").map((x) => x.trim()).filter(Boolean);
 /** 저장 시각(UTC) → 내 시간대 날짜. slice(0, 10) 은 한국 오전에 하루 전으로 나온다 */
@@ -291,6 +294,8 @@ function ScrapViewModal({ scrap, onClose }: { scrap: Scrap | null; onClose: () =
               <iframe src={src} title={scrap.title} />
             ) : isHtml(scrap) ? (
               html == null ? <Skeleton height="100%" radius={12} /> : <iframe srcDoc={html} title={scrap.title} sandbox="allow-scripts allow-popups allow-forms" />
+            ) : isSheet(scrap) ? (
+              <ScrapSheetPreview src={src} ext={ext(scrap.file_name) || "xlsx"} />
             ) : isText(scrap) ? (
               <pre className={s.rawMd} style={{ maxHeight: "none", height: "100%" }}>{text ?? ""}</pre>
             ) : (
