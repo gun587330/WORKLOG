@@ -4,7 +4,7 @@
  * TanStack Query 훅 — DAL(lib/api/worklog) 위의 얇은 층. 키는 개체 이름 하나 + 인자.
  * 기록 올리기 · 삭제는 계획 항목 완료(0005 의 달성)와 홈 집계를 바꾸므로 넓게 무효화한다.
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap } from "@/lib/api/response";
 import {
   getProjects, upsertProject, setProjectStatus, type ProjectInput,
@@ -91,6 +91,10 @@ export function usePlans() {
 }
 export function usePlan(id: string | null) {
   return useQuery({ queryKey: K.plan(id), queryFn: () => getPlan(id as string).then(unwrap), enabled: !!id });
+}
+/** 여러 계획의 상세를 한 번에(홈 「진행 중인 계획」 주간 묶음, 2026-10-26). 같은 키라 계획 화면과 캐시를 나눈다 */
+export function usePlanDetails(ids: string[]) {
+  return useQueries({ queries: ids.map((id) => ({ queryKey: K.plan(id), queryFn: () => getPlan(id).then(unwrap) })) });
 }
 /** 프로젝트 화면(목록 카드 · 상세)은 목표 · 계획 · 기록 · 할 일을 모아 보여 주므로 그쪽이 바뀌면 같이 다시 읽는다 */
 function invalidateProjectSide(qc: ReturnType<typeof useQueryClient>) {

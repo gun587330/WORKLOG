@@ -548,6 +548,26 @@
 .footerLeft { margin-right: auto; }
 
 /* 진행 중인 계획 */
+/* 홈 「진행 중인 계획」 주간 묶음 (2026-10-26). 묶음 머리 = 작은 회색 글자, 계획 줄 = 코드 · 제목 · [열기] */
+.planGroup { padding-top: 0.5rem; }
+.planGroup + .planGroup { margin-top: 0.5rem; border-top: 1px solid var(--line); }
+.planGroupHead {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.planBlock { padding-top: 0.375rem; }
+.planRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  min-width: 0;
+}
+.planTitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .goal {
   display: flex;
   flex-direction: column;

@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHomeStats, useProjectNames, useSetLogTodoDone, useSetPlanItemStatus } from "@/hooks/use-worklog";
+import { useHomeStats, usePlanDetails, usePlans, useProjectNames, useSetLogTodoDone, useSetPlanItemStatus } from "@/hooks/use-worklog";
 import type { HomeStats } from "@/lib/api/worklog";
 import { formatHours, pad2 } from "@/lib/work-log";
 import { addDays, addMonths, daysInMonth, fmtKDate, fmtMD, fmtMonth, fmtPeriod, logCodeToMD, parseISO, sameMonth, todayISO } from "@/lib/format";
@@ -28,7 +28,6 @@ const DOW = ["월", "화", "수", "목", "금", "토", "일"];
 export function HomeView() {
   const t = useTranslations("wl.home");
   const tc = useTranslations("wl.common");
-  const router = useRouter();
   const [today, setToday] = useState("");
   useEffect(() => setToday(todayISO()), []);
   const stats = useHomeStats(today);
@@ -82,31 +81,7 @@ export function HomeView() {
 
         <Todos stats={d} loading={stats.isLoading} name={names.name} />
 
-        <section className={`${s.colCard} ${s.planCard}`}>
-          <div className={s.row}>
-            <p className={s.secLab}>{t("activePlan")} {d?.active_plan && <small>{d.active_plan.title} · {fmtPeriod(d.active_plan.period_start, d.active_plan.period_end)}</small>}</p>
-            {d?.active_plan && <Button variant="secondary" size="sm" onClick={() => router.push(`/plans?plan=${d.active_plan!.id}`)}>{t("open")}</Button>}
-          </div>
-          <div className={s.scrollArea} style={{ marginTop: ".25rem" }}>
-            {stats.isLoading && <Skeleton height="4rem" radius={8} />}
-            {d && !d.active_plan && <p className={s.hint}>{t("noPlan")}</p>}
-            {(d?.active_plan?.goals ?? []).map((g) => {
-              const pct = g.total ? Math.round((g.done / g.total) * 100) : 0;
-              return (
-                <div key={g.code} className={s.goal}>
-                  <div className={s.goalHead}>
-                    <span className={s.code}>{g.code}</span>
-                    <span>{g.title}</span>
-                    <Chip static size="sm" tone="accent">{names.name(g.project_slug)}</Chip>
-                    <small>{g.done}/{g.total} · {pct}%</small>
-                  </div>
-                  <div className={s.bar}><i className={s.barFill} style={{ width: `${pct}%` }} /></div>
-                </div>
-              );
-            })}
-          </div>
-          <div className={s.cfoot}><span><b>{t("rateFoot")}</b> {t("rateFootDesc")}</span></div>
-        </section>
+        <ActivePlans today={today} name={names.name} />
       </div>
     </div>
   );
@@ -347,6 +322,100 @@ function Todos({ stats, loading, name }: { stats: HomeStats | undefined; loading
       </ul>
       <div className={s.cfoot}><span>{t("todoFoot1")}</span><span>{t("todoFoot2")}</span></div>
       <TodoFormModal open={form.open} todo={form.todo} planItems={planItems} onClose={() => setForm({ open: false, todo: null })} />
+    </section>
+  );
+}
+
+/* ── 진행 중인 계획 — 주간별 묶음 (2026-10-26 지시) ──
+ * 진행 중(status active)이고 끝난 지 7일이 안 된 계획을 모두 보인다(plan_items_open 과 같은 창, 0010).
+ * 주간 계획(기간 7일 이하)은 코드의 주(PL-YYYY-Www, 없으면 시작일이 든 월요일 주)로 묶고, 오늘이 기간 안이면 「이번 주」, 아니면 「다음 주 · 지난 주」 + 계획 기간으로 이름을 붙인다. 그보다 긴 계획은 「월간」 묶음.
+ * 순서: 이번 주 → 다음 주 이후(가까운 순) → 지난 주 → 월간. 목표별 달성률은 계획 상세(get_plan)의 항목에서 센다. */
+const weekStart = (iso: string) => addDays(iso, -((parseISO(iso).getDay() + 6) % 7));
+const weekDiff = (a: string, b: string) => Math.round((parseISO(weekStart(a)).getTime() - parseISO(weekStart(b)).getTime()) / (7 * 864e5));
+function ActivePlans({ today, name }: { today: string; name: (slug: string) => string }) {
+  const t = useTranslations("wl.home");
+  const router = useRouter();
+  const plans = usePlans();
+  const active = useMemo(
+    () => (today ? (plans.data ?? []).filter((p) => p.status === "active" && p.period_end >= addDays(today, -7)) : []),
+    [plans.data, today],
+  );
+  const details = usePlanDetails(active.map((p) => p.id));
+  const groups = useMemo(() => {
+    const m = new Map<string, { key: string; rank: number; rel: string | null; start: string; end: string; monthly: boolean; plans: typeof active }>();
+    for (const p of active) {
+      const days = (parseISO(p.period_end).getTime() - parseISO(p.period_start).getTime()) / 864e5 + 1;
+      const monthly = days > 7;
+      // 주간 계획의 주 = 코드의 주(PL-YYYY-Www)가 있으면 그것, 없으면 시작일이 든 월요일 주. 오늘이 기간 안이면 이번 주로 본다
+      // (계획 기간이 월요일에 맞지 않게 저장된 경우가 있어서: PL-2026-W43 = 10-20 화 ~ 10-26 월)
+      const inNow = p.period_start <= today && today <= p.period_end;
+      const wd = weekDiff(p.period_start, today);
+      // 기간이 오늘을 안 품는데 같은 주로 계산되면(월요일 어긋남) 시작일이 오늘 뒤면 다음 주, 앞이면 지난 주
+      const diff = inNow ? 0 : wd !== 0 ? wd : p.period_start > today ? 1 : -1;
+      const key = monthly ? "month" : p.code.match(/^PL-\d{4}-W\d{2}$/) ? p.code : weekStart(p.period_start);
+      const rel = monthly ? null : diff === 0 ? t("thisWeek") : diff === 1 ? t("nextWeek") : diff === -1 ? t("lastWeek") : null;
+      const rank = monthly ? 3e3 : diff === 0 ? 0 : diff > 0 ? diff : 1e3 - diff;
+      const g = m.get(key) ?? m.set(key, { key, rank, rel, start: p.period_start, end: p.period_end, monthly, plans: [] }).get(key)!;
+      if (p.period_start < g.start) g.start = p.period_start;
+      if (p.period_end > g.end) g.end = p.period_end;
+      if (rank < g.rank) { g.rank = rank; g.rel = rel; }
+      g.plans.push(p);
+    }
+    return [...m.values()]
+      .sort((a, b) => a.rank - b.rank || b.start.localeCompare(a.start))
+      .map((g) => ({ key: g.key, plans: g.plans, label: g.monthly ? `${t("planMonthly")} · ${fmtPeriod(g.start, g.end)}` : `${g.rel ? `${g.rel} · ` : ""}${fmtPeriod(g.start, g.end)}` }));
+  }, [active, today, t]);
+  const goalsOf = (id: string) => {
+    const d = details[active.findIndex((p) => p.id === id)]?.data;
+    if (!d) return null;
+    const by = new Map<string, { code: string; title: string; project_slug: string; total: number; done: number }>();
+    for (const it of d.items) {
+      const g = by.get(it.goal_code) ?? by.set(it.goal_code, { code: it.goal_code, title: it.goal_title, project_slug: it.project_slug, total: 0, done: 0 }).get(it.goal_code)!;
+      g.total += 1; if (it.status === "done") g.done += 1;
+    }
+    return [...by.values()].sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  };
+
+  return (
+    <section className={`${s.colCard} ${s.planCard}`}>
+      <p className={s.secLab}>{t("activePlan")} {active.length > 0 && <small>{t("planCount", { count: active.length })}</small>}</p>
+      <div className={s.scrollArea} style={{ marginTop: ".25rem" }}>
+        {plans.isLoading && <Skeleton height="4rem" radius={8} />}
+        {plans.data && active.length === 0 && <p className={s.hint}>{t("noPlan")}</p>}
+        {groups.map((g) => (
+          <div key={g.key} className={s.planGroup}>
+            <p className={s.planGroupHead}>{g.label}</p>
+            {g.plans.map((p) => {
+              const goals = goalsOf(p.id);
+              return (
+                <div key={p.id} className={s.planBlock}>
+                  <div className={s.planRow}>
+                    <span className={s.code}>{p.code}</span>
+                    <span className={s.planTitle}>{p.title}</span>
+                    <Button variant="secondary" size="sm" onClick={() => router.push(`/plans?plan=${p.id}`)}>{t("open")}</Button>
+                  </div>
+                  {!goals && <Skeleton height="2rem" radius={8} />}
+                  {goals?.map((go) => {
+                    const pct = go.total ? Math.round((go.done / go.total) * 100) : 0;
+                    return (
+                      <div key={go.code} className={s.goal}>
+                        <div className={s.goalHead}>
+                          <span className={s.code}>{go.code}</span>
+                          <span>{go.title}</span>
+                          <Chip static size="sm" tone="accent">{name(go.project_slug)}</Chip>
+                          <small>{go.done}/{go.total} · {pct}%</small>
+                        </div>
+                        <div className={s.bar}><i className={s.barFill} style={{ width: `${pct}%` }} /></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <div className={s.cfoot}><span><b>{t("rateFoot")}</b> {t("rateFootDesc")}</span></div>
     </section>
   );
 }
