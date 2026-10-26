@@ -125,7 +125,17 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
-.inputCard { grid-column: 3; }
+.inputCard {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* 1행 높이는 KPI 3칸이 정한다(2026-10-26). 이 박스는 크기 계산에서 빠지고(contain: size) 행 높이만큼 늘어나며,
+     프로젝트가 많으면 목록이 박스 안에서 스크롤한다. 전에는 목록 줄 수만큼 1행이 늘어 주마다 · 기록을 올릴 때마다
+     달력 · 할 일(2행) 높이가 출렁였다(월요일에 목록이 비면 1행이 KPI 최소 높이로 줄어듦) */
+  contain: size;
+}
+.inputCard .projList { flex: 1; min-height: 0; overflow-y: auto; }
 .calCard { grid-column: 1; }
 .todoCard { grid-column: 2; }
 .planCard { grid-column: 3; }
@@ -1762,6 +1772,8 @@ a.todaySrc:hover { text-decoration: underline; }
   .page { height: auto; }
   .home, .split, .meSplit, .scrapView { grid-template-columns: 1fr; grid-template-rows: none; }
   .kpis, .inputCard, .calCard, .todoCard, .planCard { grid-column: auto; }
+  .inputCard { contain: none; }
+  .inputCard .projList { overflow: visible; }
   .kpis { grid-template-columns: 1fr; }
   .calGrid { min-height: 22rem; }
   .hgrid { grid-auto-columns: 85vw; }
