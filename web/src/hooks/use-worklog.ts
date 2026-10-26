@@ -11,7 +11,7 @@ import {
   getProjectOverview, getProject, saveProject, type ProjectProfileInput,
   getGoals, upsertGoal, deleteGoal, type GoalInput,
   getPlans, getPlan, insertPlan, deletePlan, setPlanItemStatus,
-  getWorkLogs, getWorkLog, insertWorkLog, deleteWorkLog, setLogTodoDone, upsertTodo, deleteTodo, type LogFilter, type TodoInput,
+  getWorkLogs, getWorkLog, insertWorkLog, updateWorkLog, deleteWorkLog, setLogTodoDone, upsertTodo, deleteTodo, type LogFilter, type TodoInput,
   getPrompts, upsertPrompt, deletePrompt, type PromptInput,
   getContextPack, getHomeStats,
   getDiary, upsertDiary, deleteDiary, type DiaryInput,
@@ -140,6 +140,13 @@ export function useInsertWorkLog() {
   return useMutation({
     mutationFn: (v: { parsed: ParsedWorkLog; rawMd: string }) => insertWorkLog(v.parsed, v.rawMd).then(unwrap),
     onSuccess: () => invalidateLogSide(qc),
+  });
+}
+export function useUpdateWorkLog() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; parsed: ParsedWorkLog; rawMd: string }) => updateWorkLog(v.id, v.parsed, v.rawMd).then(unwrap),
+    onSuccess: () => { invalidateLogSide(qc); qc.invalidateQueries({ queryKey: ["home"] }); invalidateProjectSide(qc); },
   });
 }
 export function useDeleteWorkLog() {

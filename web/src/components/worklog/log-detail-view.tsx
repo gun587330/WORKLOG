@@ -5,6 +5,7 @@
  * 좌(목차 · 프로젝트 · 태그 필터) · 중앙(날짜 · 요약 · 타임라인, 기본 접힘) · 우(통계 · 시간대별 작업량 · 목표 진행 · 앞으로 할 일).
  * anserx 작업 공유 상세와 같고 카테고리 → 프로젝트(P-코드) · 목표 칩 · 「목표 진행」 박스가 더해졌다.
  * 머리(꺾쇠 · 코드)는 화면에 고정되고 그 아래만 스크롤된다(2026-10-21 지시). 앞으로 할 일은 홈과 같은 체크 · 수정 · 삭제(0011).
+ * 머리 우측 [원문 수정] = 올리기 모달의 수정 모드(저장된 md 를 고쳐 같은 기록에 다시 저장, 0023 · 2026-10-26).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -18,6 +19,8 @@ import type { WorkLogDetail } from "@/lib/api/worklog";
 import { formatHours, pad2, parseWorkLog, type WorkItem } from "@/lib/work-log";
 import { fmtKDateLong, fmtMD, todayISO } from "@/lib/format";
 import { TodoFormModal, type TodoFormValue } from "./todo-form-modal";
+import { UploadLogModal } from "./upload-log-modal";
+import { useToast } from "@/components/ui/toast";
 import { KpiChart } from "./charts";
 import { WorkMarkdown } from "./work-markdown";
 import s from "./worklog.module.css";
@@ -38,6 +41,9 @@ export function LogDetailView({ id }: { id: string }) {
   const tlRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const toast = useToast();
+  const editTarget = useMemo(() => (log.data ? { id: log.data.log.id, rawMd: log.data.log.raw_md } : undefined), [log.data]);
 
   const items = parsed?.items ?? [];
   const visible = useMemo(
@@ -85,7 +91,17 @@ export function LogDetailView({ id }: { id: string }) {
 
   return (
     <div className={s.detailPage}>
-      <PageHeader title={detail.log.code} leading={<BackLink href="/logs" label={t("backLabel")} />} />
+      <PageHeader
+        title={detail.log.code}
+        leading={<BackLink href="/logs" label={t("backLabel")} />}
+        actions={<Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>{t("editRaw")}</Button>}
+      />
+      <UploadLogModal
+        open={editOpen}
+        edit={editTarget}
+        onClose={() => setEditOpen(false)}
+        onPublished={() => { setEditOpen(false); toast({ title: t("editSaved"), variant: "success" }); }}
+      />
       <div ref={scrollRef} className={s.detailScroll}>
       <div className={s.detail}>
         <aside className={s.sideCol}>

@@ -1,6 +1,6 @@
 # WORK LOG 백엔드 — 스키마 (SCHEMA)
 
-> 개체의 뜻은 `docs/VOCAB.md` 가 정하고, 이 문서는 **테이블 · 마이그레이션 순서 · 결정 로그**를 적는다. (최종 수정: 2026-10-24)
+> 개체의 뜻은 `docs/VOCAB.md` 가 정하고, 이 문서는 **테이블 · 마이그레이션 순서 · 결정 로그**를 적는다. (최종 수정: 2026-10-26)
 
 ## 1. 테이블
 
@@ -42,6 +42,7 @@
 | 0019 | `calendar_all_todos` | 기한만 있는 할 일도 달력에(하루짜리 줄) |
 | 0020 | `scraps` | `scraps` + Storage 버킷 `scraps`(비공개 · 50MB · 소유자 정책) + RPC 3개, links 종류에 diary · scrap |
 | 0022 | `projects_page` | `projects.intro_md` · `objective_md` + `save_project` · `project_hours` · `project_overview` · `get_project`(프로젝트 페이지 집계) |
+| 0023 | `update_work_log` | 올린 기록을 md 원문에서 고쳐 같은 행에 다시 저장(작업 · 시간표 · 링크 · 달성 재적재, 할 일은 문장이 같으면 행 유지) |
 | 0015 | `diary` | `diary_entries` + `list_diary` · `upsert_diary`(본문 링크 함께) · `delete_diary`, `links.from_type` 에 `diary` 추가 |
 
 ## 10. 결정 로그
@@ -63,3 +64,4 @@
 - 2026-10-22 (0015) 개인 일기. 나중에 일기 · 작업을 함께 엮는 확장을 위해 코드(D-날짜)와 본문 링크를 처음부터 남긴다. 개인 글이라 컨텍스트 팩 · MCP 에는 내지 않았다.
 - 2026-10-22 (0020) 스크랩. 파일 본체는 Storage, 메타데이터는 표. 표는 다른 표처럼 RPC 로만, Storage 는 로그인(=소유자) 정책으로만 연다. 삭제 RPC 는 경로를 돌려주고 화면이 Storage API 로 본체를 지운다(SQL 로 storage.objects 를 지우면 파일이 남는다).
 - 2026-10-24 (0022) 프로젝트 페이지. 소개 · 목표 글은 새 표가 아니라 `projects` 의 두 컬럼으로 뒀다(프로젝트당 한 글이고, 목록 · 칩이 이미 이 표를 본다). 화면 저장은 새 함수 `save_project` 가 맡고 기존 `upsert_project` 는 그대로 둔다(MCP `create_project` 가 그 서명을 부른다). `save_project` 는 고칠 때 slug 를 받지 않고 기존 값을 유지한다(기록 · 계획 md 원문이 `P-코드` 를 가리키므로). 투입 시간은 0009 와 같은 근사식을 `project_hours(from, to)` 로 빼서 목록 · 상세 · 주간 추이가 같은 수를 보게 했다.
+- 2026-10-26 (0023) 기록 수정. 지우고 다시 올리면 코드가 바뀌고 홈에서 체크하거나 기한 · 프로젝트를 붙인 할 일이 사라져서, 같은 행을 두고 내용만 바꾸는 RPC 를 따로 뒀다. 할 일은 문장(text) 일치로 짝을 지어 기존 행을 남긴다(문장을 바꾸면 새 할 일로 본다). 달성은 delete_work_log 와 같은 규칙으로 되돌린 뒤 다시 매긴다.

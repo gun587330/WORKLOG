@@ -179,7 +179,11 @@
       "unknownProject": "P-{slug} 는 등록된 프로젝트가 아니에요. 코드를 고치거나 프로젝트를 먼저 만들어 주세요.",
       "unknownGoal": "{code} 목표는 없어요. 컨텍스트 팩에 있는 목표 코드만 쓸 수 있어요.",
       "appendHint": "올릴 때마다 새 기록으로 쌓여요. 같은 날짜를 두 번 올리면 둘 다 남아요.",
-      "serverFailed": "서버가 거절했어요: {message}"
+      "serverFailed": "서버가 거절했어요: {message}",
+      "editTitle": "기록 수정",
+      "save": "저장",
+      "editReviewOk": "문제 없이 읽었어요. 저장하면 이 기록의 작업 · 시간표 · 할 일이 고친 원문대로 바뀌어요.",
+      "editHint": "같은 기록에 덮어써요(코드 그대로).\n할 일은 문장이 같으면 체크 · 기한 · 프로젝트가 그대로 남고, 문장을 바꾸거나 지운 줄은 새로 만들거나 지워요."
     },
     "planUpload": {
       "title": "새 계획 올리기",
@@ -199,6 +203,8 @@
     },
     "detail": {
       "backLabel": "작업 기록으로",
+      "editRaw": "원문 수정",
+      "editSaved": "기록을 고쳐 저장했어요",
       "toc": "목차",
       "project": "프로젝트",
       "tags": "태그",

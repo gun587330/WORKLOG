@@ -157,6 +157,24 @@ export async function insertWorkLog(parsed: ParsedWorkLog, rawMd: string): Promi
   if (parsed.links.length) await call("insert_links", { p_from_type: "log", p_from_id: res.data.id, p_links: toLinks(parsed.links) });
   return res;
 }
+/** 기록 수정 — 같은 행(코드 유지)에 원문을 다시 저장한다(0023). 할 일은 문장이 같으면 체크 · 기한 · 프로젝트를 그대로 둔다 */
+export async function updateWorkLog(id: string, parsed: ParsedWorkLog, rawMd: string): Promise<ApiResult<WorkLog>> {
+  return call("update_work_log", {
+    p_id: id,
+    p_log_date: parsed.meta.date,
+    p_author_name: parsed.meta.author,
+    p_summary: parsed.meta.summary,
+    p_raw_md: rawMd,
+    p_items: parsed.items.map((i) => ({
+      seq: i.seq, time_text: i.time, hour_end: i.hourEnd, title: i.title, project_slug: i.projectSlug,
+      goal_code: i.goalCode, status: i.status, tags: i.tags, body_md: i.body,
+    })) as unknown as Json,
+    p_hours: parsed.hours.map((h) => ({ hour: h.hour, value: h.value, label: h.label })) as unknown as Json,
+    p_todos: parsed.todos.map((t) => ({ seq: t.seq, text: t.text, needs_decision: t.needsDecision, plan_item_code: t.planItemCode })) as unknown as Json,
+    p_completions: parsed.completions,
+    p_links: toLinks(parsed.links),
+  });
+}
 export const deleteWorkLog = (id: string) => call("delete_work_log", { p_id: id });
 export const setLogTodoDone = (id: string, done: boolean) => call("set_log_todo_done", { p_id: id, p_done: done });
 

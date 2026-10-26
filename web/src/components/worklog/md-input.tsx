@@ -10,9 +10,10 @@ import { Segmented } from "@/components/ui/segmented";
 import { Textarea } from "@/components/ui/textarea";
 import s from "./worklog.module.css";
 
-export function MdInput({ md, onChange, dropHint }: { md: string; onChange: (md: string, fileName?: string) => void; dropHint: string }) {
+export function MdInput({ md, onChange, dropHint, initialMode = "file" }: { md: string; onChange: (md: string, fileName?: string) => void; dropHint: string; initialMode?: "file" | "paste" }) {
   const t = useTranslations("wl.upload");
-  const [mode, setMode] = useState<"file" | "paste">("file");
+  /* initialMode 는 opt-in: 기록 수정은 원문이 이미 있어 붙여넣기(원문 편집)로 연다(2026-10-26). 기본은 그대로 파일 */
+  const [mode, setMode] = useState<"file" | "paste">(initialMode);
   const [fileName, setFileName] = useState("");
   const [over, setOver] = useState(false);
   const readFile = (f: File | undefined) => {

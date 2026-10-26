@@ -1048,6 +1048,39 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_work_log: {
+        Args: {
+          p_author_name: string
+          p_completions: string[]
+          p_hours: Json
+          p_id: string
+          p_items: Json
+          p_links: Json
+          p_log_date: string
+          p_raw_md: string
+          p_summary: string
+          p_todos: Json
+        }
+        Returns: {
+          author_name: string
+          code: string
+          created_at: string
+          done_count: number
+          hours_total: number
+          id: string
+          log_date: string
+          raw_md: string
+          summary: string | null
+          task_count: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "work_logs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       upsert_diary: {
         Args: {
           p_body: string
